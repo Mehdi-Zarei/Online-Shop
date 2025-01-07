@@ -1,15 +1,15 @@
 {
   "name": "online-shop",
   "version": "1.0.0",
-  "description": "",
+  "description": "Online Shop for selling products and services with Node.js and Express.js and MongoDB and Redis",
   "main": "./src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon run server.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Mehdi Zarei",
+  "license": "MIT",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.7",
@@ -20,6 +20,10 @@
     "multer": "^1.4.5-lts.1",
     "nanoid": "^5.0.9",
     "nodemailer": "^6.9.16",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
     "swagger-ui-express": "^5.0.1",
     "yup": "^1.6.1",
     "zarinpal-checkout": "^0.3.0"

@@ -8,6 +8,8 @@ const cors = require("cors");
 const { corseOptions } = require("./middlewares/corsOptions");
 const authRoutes = require("./modules/auth/V1/auth.routes");
 const { errorHandler } = require("./middlewares/errorHandler");
+const passport = require("passport");
+const passportLocal = require("./strategies/passport-local");
 
 //* Built-in Middlewares
 
@@ -18,6 +20,8 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 //* Third-party Middleware
 
 app.use(cors(corseOptions));
+
+passport.use(passportLocal);
 
 //* Import Routes
 

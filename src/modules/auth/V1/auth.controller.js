@@ -131,6 +131,27 @@ exports.verify = async (req, res, next) => {
   }
 };
 
+exports.localLogin = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    const accessToken = generateAccessToken(user._id, user.roles);
+
+    const refreshToken = generateRefreshToken(user._id);
+
+    const hashedRefreshToken = bcrypt.hashSync(refreshToken, 12);
+
+    await saveRefreshTokenInRedis(user._id, hashedRefreshToken);
+
+    return successResponse(res, 200, "User Logged In Successfully.", {
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.getMe = async (req, res, next) => {
   try {
   } catch (error) {

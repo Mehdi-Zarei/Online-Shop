@@ -10,6 +10,7 @@ const authRoutes = require("./modules/auth/V1/auth.routes");
 const { errorHandler } = require("./middlewares/errorHandler");
 const passport = require("passport");
 const passportLocal = require("./strategies/passport-local");
+const passportGoogle = require("./strategies/passport-google");
 
 //* Built-in Middlewares
 
@@ -22,6 +23,7 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 app.use(cors(corseOptions));
 
 passport.use(passportLocal);
+passport.use(passportGoogle);
 
 //* Import Routes
 

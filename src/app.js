@@ -7,6 +7,7 @@ const cors = require("cors");
 
 const { corseOptions } = require("./middlewares/corsOptions");
 const authRoutes = require("./modules/auth/V1/auth.routes");
+const { errorHandler } = require("./middlewares/errorHandler");
 
 //* Built-in Middlewares
 
@@ -29,5 +30,7 @@ app.use((req, res) => {
 });
 
 //* Global Error Handler
+
+app.use(errorHandler);
 
 module.exports = app;

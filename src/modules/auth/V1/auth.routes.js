@@ -1,14 +1,29 @@
 const express = require("express");
 const router = express.Router();
+const passport = require("passport");
 
-const { sent, verify, getMe } = require("./auth.controller");
+const { sent, verify, getMe, localLogin } = require("./auth.controller");
 
 const { bodyValidator } = require("../../../middlewares/validator");
 
-const { phoneNumberSchema, registerSchema } = require("./auth.validators");
+const {
+  phoneNumberSchema,
+  registerSchema,
+  loginSchema,
+} = require("./auth.validators");
 
 router.route("/auth/sent").post(bodyValidator(phoneNumberSchema), sent);
+
 router.route("/auth/verify").post(bodyValidator(registerSchema), verify);
+
+router
+  .route("/auth/login")
+  .post(
+    bodyValidator(loginSchema),
+    passport.authenticate("local", { session: false }),
+    localLogin
+  );
+
 router.route("/auth/getMe").get(getMe);
 
 module.exports = router;

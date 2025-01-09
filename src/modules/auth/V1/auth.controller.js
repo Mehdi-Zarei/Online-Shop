@@ -131,7 +131,7 @@ exports.verify = async (req, res, next) => {
   }
 };
 
-exports.localLogin = async (req, res, next) => {
+exports.login = async (req, res, next) => {
   try {
     const user = req.user;
 

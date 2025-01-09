@@ -154,6 +154,21 @@ exports.login = async (req, res, next) => {
 
 exports.getMe = async (req, res, next) => {
   try {
+    const user = req.user;
+
+    return successResponse(res, 200, "OK", user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.refreshToken = async (req, res, next) => {
+  try {
+    const user = req.user;
+
+    const accessToken = generateAccessToken(user._id, user.roles);
+
+    return successResponse(res, 200, "OK", { accessToken });
   } catch (error) {
     next(error);
   }

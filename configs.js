@@ -25,9 +25,9 @@ module.exports = {
   },
 
   google: {
-    googleClientID: process.env.GOOGLE_CLIENT_ID,
+    clientID: process.env.GOOGLE_CLIENT_ID,
 
-    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
   },
 
   otp: {

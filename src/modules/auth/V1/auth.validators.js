@@ -45,4 +45,29 @@ const registerSchema = yup.object().shape({
     .max(5, "Otp Code Must be 5 characters"),
 });
 
-module.exports = { phoneNumberSchema, registerSchema };
+const loginSchema = yup.object().shape({
+  identifier: yup
+    .string()
+    .required("Identifier is required.")
+    .test(
+      "is-email-or-phone",
+      "Identifier must be a valid email or phone number.",
+      (value) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        const phoneRegex = /^(\+98|0)?9\d{9}$/;
+
+        return emailRegex.test(value) || phoneRegex.test(value);
+      }
+    ),
+  password: yup
+    .string()
+    .required("Password is required.") // Field is mandatory
+    .min(8, "Password must be at least 8 characters long.") // Minimum length
+    .matches(
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/,
+      "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character."
+    ), // Regex to enforce strong password rules
+});
+
+module.exports = { phoneNumberSchema, registerSchema, loginSchema };

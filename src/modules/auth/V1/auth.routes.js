@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("passport");
 
-const { sent, verify, getMe, localLogin } = require("./auth.controller");
+const { sent, verify, getMe, login } = require("./auth.controller");
 
 const { bodyValidator } = require("../../../middlewares/validator");
 
@@ -21,8 +21,16 @@ router
   .post(
     bodyValidator(loginSchema),
     passport.authenticate("local", { session: false }),
-    localLogin
+    login
   );
+
+router
+  .route("/auth/google")
+  .get(passport.authenticate("google", { scope: ["profile", "email"] }));
+
+router
+  .route("/auth/google/callback")
+  .get(passport.authenticate("google", { session: false }), login);
 
 router.route("/auth/getMe").get(getMe);
 

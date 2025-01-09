@@ -69,9 +69,16 @@ const saveRefreshTokenInRedis = async (key, value) => {
   }
 };
 
+const getRefreshTokenFromRedis = async (key) => {
+  const refreshToken = await redis.get(`refreshToken:${key}`);
+  console.log("redis refresh ->", refreshToken);
+  return refreshToken;
+};
+
 module.exports = {
   saveOtpInRedis,
   gettingOtpInfoFromRedis,
   saveRefreshTokenInRedis,
   gettingOtpFromRedis,
+  getRefreshTokenFromRedis,
 };

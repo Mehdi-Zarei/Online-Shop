@@ -1,43 +1,45 @@
 const userModel = require("../../../../models/users");
 
 const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 
+//* Redis Helper
 const {
   gettingOtpInfoFromRedis,
   saveOtpInRedis,
   saveRefreshTokenInRedis,
+  gettingOtpFromRedis,
 } = require("../../../helpers/redis");
 
+//* Response Helper
 const {
   errorResponse,
   successResponse,
 } = require("../../../helpers/responseMessage");
 
+//* OTP Service
 const sentOtp = require("../../../services/sentOtp");
-const configs = require("../../../../configs");
+
+//* JWT Helper
+const {
+  generateAccessToken,
+  generateRefreshToken,
+} = require("../../../helpers/accessAndRefreshToken");
 
 exports.sent = async (req, res, next) => {
   try {
     const { phone } = req.body;
 
-    //TODO : Validator
-
-    //TODO : If user exist you can redirect him to login
-
-    const isUserExist = await userModel
-      .findOne({ $or: [{ phone, isRestrict: true }] })
-      .lean();
+    const isUserExist = await userModel.findOne({ phone }).lean();
 
     if (isUserExist) {
-      if (isUserExist.phone === phone) {
+      if (isUserExist.isRestrict) {
+        return errorResponse(res, 409, "User Already Is Banned !!");
+      } else {
         return errorResponse(
           res,
           409,
           "User Already Exist With This Phone Number !!"
         );
-      } else {
-        return errorResponse(res, 409, "User Already Is Banned !!");
       }
     }
 
@@ -52,7 +54,7 @@ exports.sent = async (req, res, next) => {
     const generateOtpCode =
       Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
 
-    console.log(generateOtpCode);
+    console.log(generateOtpCode); //TODO: Remove log
 
     await saveOtpInRedis(phone, generateOtpCode);
 
@@ -75,28 +77,23 @@ exports.verify = async (req, res, next) => {
   try {
     const { phone, otp, name, email, password, isSeller } = req.body;
 
-    //TODO Validator
-
     const isUserExist = await userModel.findOne({ email }).lean();
 
     if (isUserExist) {
       return errorResponse(res, 409, "This Email Address Already Exist  !!");
     }
 
-    const savedOtp = await gettingOtpInfoFromRedis(phone);
+    const savedOtpFromRedis = await gettingOtpFromRedis(phone);
 
-    console.log("savedOtpCode ->", savedOtp);
-    console.log("body otp ->", otp);
-
-    if (!savedOtp) {
+    if (!savedOtpFromRedis) {
       return errorResponse(res, 404, {
         message: "OTP Code Has Expired !!Please reapply. ",
       });
     }
 
-    if (savedOtp !== otp) {
+    if (savedOtpFromRedis !== otp) {
       return errorResponse(res, 404, {
-        message: "The otp code is incorrect.",
+        message: "OTP Code Has Expired Or Incorrect.",
       });
     }
 
@@ -110,21 +107,14 @@ exports.verify = async (req, res, next) => {
       email,
       roles: isFirstUser ? ["OWNER"] : isSeller ? ["SELLER", "USER"] : ["USER"],
       password: hashedPassword,
-      avatar,
+      avatar: "null",
       isRestrict: false,
+      provider: "local",
     });
 
-    const accessToken = jwt.sign(
-      { id: newUser._id, roles: newUser.roles },
-      configs.auth.jwtSecretAccessToken,
-      { expiresIn: configs.auth.accessTokenExpireInMinutes }
-    );
+    const accessToken = generateAccessToken(newUser._id, newUser.roles);
 
-    const refreshToken = jwt.sign(
-      { id: newUser._id },
-      configs.auth.jwtSecretRefreshToken,
-      { expiresIn: configs.auth.refreshTokenExpireInDays }
-    );
+    const refreshToken = generateRefreshToken(newUser._id);
 
     const hashedRefreshToken = bcrypt.hashSync(refreshToken, 12);
 
@@ -134,7 +124,7 @@ exports.verify = async (req, res, next) => {
       res,
       201,
       { message: "New User Created Successfully." },
-      { data: accessToken, refreshToken }
+      { accessToken, refreshToken }
     );
   } catch (error) {
     next(error);

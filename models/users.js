@@ -1,37 +1,43 @@
 const mongoose = require("mongoose");
 
-const addressesSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  postalCode: {
-    type: String,
-    required: true,
-  },
-  location: {
-    lat: {
-      // طول جغرافیایی
+const addressesSchema = new mongoose.Schema(
+  {
+    addressName: {
+      type: String,
+      required: true,
+    },
+    postalCode: {
       type: Number,
       required: true,
     },
-    lng: {
-      // عرض جغرافیایی
+    location: {
+      lat: {
+        // طول جغرافیایی
+        type: Number,
+        required: true,
+      },
+      lng: {
+        // عرض جغرافیایی
+        type: Number,
+        required: true,
+      },
+    },
+    provincesID: {
       type: Number,
       required: true,
     },
-  },
 
-  physicalAddress: {
-    type: String,
-    required: true,
+    cityID: {
+      type: Number,
+      required: true,
+    },
+    physicalAddress: {
+      type: String,
+      required: true,
+    },
   },
-
-  cityID: {
-    type: Number,
-    required: true,
-  },
-});
+  { timestamps: true }
+);
 
 const userSchema = new mongoose.Schema(
   {

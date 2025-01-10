@@ -37,8 +37,8 @@ module.exports = {
   },
 
   nodemailer: {
-    user: process.env.NODEMAILER_USER,
-    pass: process.env.NODEMAILER_PASS,
+    user: process.env.nodemailerEmailAccount,
+    pass: process.env.nodemailerPasswordAccount,
   },
 
   domain: process.env.DOMAIN,

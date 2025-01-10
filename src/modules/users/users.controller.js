@@ -5,6 +5,9 @@ const {
   successResponse,
 } = require("../../helpers/responseMessage");
 
+const provinces = require("../../../Cities/provinces.json");
+const cities = require("../../../Cities/cities.json");
+
 exports.restrictUser = async (req, res, next) => {
   try {
     const { userID } = req.params;
@@ -89,6 +92,87 @@ exports.unRestrictUser = async (req, res, next) => {
       200,
       "User Un Restricted Successfully.",
       mainUser
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.addAddress = async (req, res, next) => {
+  try {
+    const {
+      addressName,
+      postalCode,
+      location,
+      provincesID,
+      cityID,
+      physicalAddress,
+    } = req.body;
+
+    //TODO : Validation
+
+    const userProvince = provinces.find(
+      (provinces) => +provinces.id === +provincesID
+    );
+
+    const userCity = cities.find((city) => +city.id === +cityID);
+
+    console.log("userProvince", userProvince);
+    console.log("userCity", userCity);
+
+    if (!userProvince || !userCity) {
+      return errorResponse(res, 404, "Province Or City Not Found !!");
+    }
+
+    if (
+      userProvince.id !== userCity.province_id ||
+      userCity.province_id !== userProvince.id
+    ) {
+      return errorResponse(
+        res,
+        409,
+        "The selected city and province do not belong to each other."
+      );
+    }
+    const existingAddress = await userModel.findOne({
+      _id: req.user.id,
+      "addresses.cityID": cityID,
+      "addresses.provincesID": provincesID,
+    });
+
+    if (existingAddress) {
+      return res.status(400).json({
+        success: false,
+        message: "You already have an address with the same city and province.",
+      });
+    }
+
+    const newAddress = {
+      addressName,
+      postalCode,
+      location,
+      provincesID,
+      cityID,
+      physicalAddress,
+    };
+
+    const updatedUserAddress = await userModel
+      .findByIdAndUpdate(
+        req.user.id,
+        {
+          $push: {
+            addresses: newAddress,
+          },
+        },
+        { new: true }
+      )
+      .select("-password");
+
+    return successResponse(
+      res,
+      201,
+      "New Address Added Successfully.",
+      updatedUserAddress
     );
   } catch (error) {
     next(error);

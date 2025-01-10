@@ -211,7 +211,7 @@ exports.loginWithOtp = async (req, res, next) => {
 
     return successResponse(
       res,
-      201,
+      200,
       { message: "You Are Login Successfully." },
       { accessToken, refreshToken }
     );

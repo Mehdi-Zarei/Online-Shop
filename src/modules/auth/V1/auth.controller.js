@@ -1,4 +1,5 @@
 const userModel = require("../../../../models/users");
+const configs = require("../../../../configs");
 
 const bcrypt = require("bcryptjs");
 const uuid = require("uuid").v4;
@@ -30,26 +31,41 @@ const {
   generateRefreshToken,
 } = require("../../../helpers/accessAndRefreshToken");
 
+//* Email Service
 const { sendVerificationEmail } = require("../../../utils/nodemailer");
-
-const configs = require("../../../../configs");
 
 exports.sent = async (req, res, next) => {
   try {
-    const { phone } = req.body;
+    const { phone, type } = req.body;
 
     const isUserExist = await userModel.findOne({ phone }).lean();
 
-    if (isUserExist) {
-      if (isUserExist.isRestrict) {
-        return errorResponse(res, 409, "User Already Is Banned !!");
-      } else {
-        return errorResponse(
-          res,
-          409,
-          "User Already Exist With This Phone Number !!"
-        );
+    if (type === "register") {
+      if (isUserExist) {
+        if (isUserExist.isRestrict) {
+          return errorResponse(res, 409, "User Already Is Banned !!");
+        } else {
+          return errorResponse(
+            res,
+            409,
+            "User Already Exist With This Phone Number !!"
+          );
+        }
       }
+    } else if (type === "login") {
+      if (!isUserExist) {
+        return errorResponse(res, 404, "User not found!");
+      }
+
+      if (isUserExist.isRestrict) {
+        return errorResponse(res, 409, "This User is banned!");
+      }
+    } else {
+      return errorResponse(
+        res,
+        400,
+        "Invalid request type. Use 'login' or 'register'."
+      );
     }
 
     const { expired, remainingTime } = await gettingOtpInfoFromRedis(phone);
@@ -156,6 +172,49 @@ exports.login = async (req, res, next) => {
       accessToken,
       refreshToken,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.loginWithOtp = async (req, res, next) => {
+  try {
+    const { phone, otp } = req.body;
+
+    const user = await userModel.findOne({ phone }).lean();
+
+    if (user.isRestrict) {
+      return errorResponse(res, 409, "This User is banned!");
+    }
+
+    const savedOtpFromRedis = await gettingOtpFromRedis(phone);
+
+    if (!savedOtpFromRedis) {
+      return errorResponse(res, 404, {
+        message: "OTP Code Has Expired !!Please reapply. ",
+      });
+    }
+
+    if (savedOtpFromRedis !== otp) {
+      return errorResponse(res, 404, {
+        message: "OTP Code Has Expired Or Incorrect.",
+      });
+    }
+
+    const accessToken = generateAccessToken(user._id, user.roles);
+
+    const refreshToken = generateRefreshToken(user._id);
+
+    const hashedRefreshToken = bcrypt.hashSync(refreshToken, 12);
+
+    await saveRefreshTokenInRedis(user._id, hashedRefreshToken);
+
+    return successResponse(
+      res,
+      201,
+      { message: "You Are Login Successfully." },
+      { accessToken, refreshToken }
+    );
   } catch (error) {
     next(error);
   }

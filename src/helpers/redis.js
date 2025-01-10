@@ -75,10 +75,56 @@ const getRefreshTokenFromRedis = async (key) => {
   return refreshToken;
 };
 
+const saveResetPasswordTokenInRedis = async (key, email) => {
+  try {
+    const token = await redis.hset(`resetPassword:${key}`, {
+      token: key,
+      email,
+    });
+    await redis.expire(`resetPassword:${key}`, 3600); //* 1 Hour
+    return token;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const gettingResetPasswordTokenFromRedis = async (key) => {
+  try {
+    const token = await redis.hgetall(`resetPassword:${key}`);
+    return token;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const removeResetPasswordTokenFromRedis = async (key) => {
+  try {
+    const token = await redis.del(`resetPassword:${key}`);
+
+    return token;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const removeRefreshTokenFromRedis = async (key) => {
+  try {
+    const remove = await redis.del(`refreshToken:${key}`);
+
+    return remove;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   saveOtpInRedis,
   gettingOtpInfoFromRedis,
   saveRefreshTokenInRedis,
   gettingOtpFromRedis,
   getRefreshTokenFromRedis,
+  saveResetPasswordTokenInRedis,
+  gettingResetPasswordTokenFromRedis,
+  removeResetPasswordTokenFromRedis,
+  removeRefreshTokenFromRedis,
 };

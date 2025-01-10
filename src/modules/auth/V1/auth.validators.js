@@ -70,4 +70,35 @@ const loginSchema = yup.object().shape({
     ), // Regex to enforce strong password rules
 });
 
-module.exports = { phoneNumberSchema, registerSchema, loginSchema };
+const forgetPasswordSchema = yup.object().shape({
+  email: yup
+    .string()
+    .required("Email is required.")
+    .email("Invalid email format."),
+});
+
+const resetPasswordSchema = yup.object().shape({
+  password: yup
+    .string()
+    .required("Password is required.")
+    .min(8, "Password must be at least 8 characters long.")
+    .matches(
+      /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/,
+      "Password must include at least one uppercase letter, one lowercase letter, one number, and one special character."
+    ),
+  confirmPassword: yup
+    .string()
+    .oneOf(
+      [yup.ref("password")],
+      "confirmPassword must be equal to the password value."
+    )
+    .required(),
+});
+
+module.exports = {
+  phoneNumberSchema,
+  registerSchema,
+  loginSchema,
+  forgetPasswordSchema,
+  resetPasswordSchema,
+};

@@ -28,6 +28,7 @@ module.exports = new googleStrategy(
         phone: "null",
         name,
         email,
+        password: "null",
         roles: isFirstUser ? ["OWNER"] : ["USER"],
         avatar,
         isRestrict: false,

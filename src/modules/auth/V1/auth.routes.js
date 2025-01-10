@@ -9,6 +9,7 @@ const {
   verify,
   getMe,
   login,
+  loginWithOtp,
   refreshToken,
   forgetPassword,
   resetPassword,
@@ -42,6 +43,8 @@ router
     passport.authenticate("local", { session: false }),
     login
   );
+
+router.route("/auth/login-otp").post(loginWithOtp);
 
 router
   .route("/auth/google")

@@ -8,7 +8,10 @@ const cors = require("cors");
 const { corseOptions } = require("./middlewares/corsOptions");
 const authRoutes = require("./modules/auth/V1/auth.routes");
 const usersRoutes = require("./modules/users/users.routes");
+const locationRoutes = require("./modules/provinces & cities/location.Routes");
+
 const { errorHandler } = require("./middlewares/errorHandler");
+
 const passport = require("passport");
 const passportLocal = require("./strategies/passport-local");
 const passportGoogle = require("./strategies/passport-google");
@@ -36,6 +39,7 @@ passport.use("refreshToken", passportRefreshToken);
 
 app.use("/api/v1", authRoutes);
 app.use("/api/v1", usersRoutes);
+app.use("/api/v1", locationRoutes);
 
 //* 404 Error Handler
 

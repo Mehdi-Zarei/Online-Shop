@@ -4,8 +4,10 @@ const path = require("path");
 const cors = require("cors");
 
 //* Import Path Files
+
 const { corseOptions } = require("./middlewares/corsOptions");
 const authRoutes = require("./modules/auth/V1/auth.routes");
+const usersRoutes = require("./modules/users/users.routes");
 const { errorHandler } = require("./middlewares/errorHandler");
 const passport = require("passport");
 const passportLocal = require("./strategies/passport-local");
@@ -14,23 +16,29 @@ const passportAccessToken = require("./strategies/passport-accessToken");
 const passportRefreshToken = require("./strategies/passport-refreshToken");
 
 //* Built-in Middlewares
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/public", express.static(path.join(__dirname, "public")));
 
 //* Third-party Middleware
+
 app.use(cors(corseOptions));
 
 //* Passport Strategies
+
 passport.use(passportLocal);
 passport.use(passportGoogle);
 passport.use("accessToken", passportAccessToken);
 passport.use("refreshToken", passportRefreshToken);
 
 //* Import Routes
+
 app.use("/api/v1", authRoutes);
+app.use("/api/v1", usersRoutes);
 
 //* 404 Error Handler
+
 app.use((req, res) => {
   return res.status(404).json({ message: "OoPss!Page Not Found !!" });
 });

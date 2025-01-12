@@ -1,12 +1,12 @@
 const { isValidObjectId } = require("mongoose");
-const userModel = require("../../../models/users");
+const userModel = require("../../../../models/users");
 const {
   errorResponse,
   successResponse,
-} = require("../../helpers/responseMessage");
+} = require("../../../helpers/responseMessage");
 
-const provinces = require("../../../Cities/provinces.json");
-const cities = require("../../../Cities/cities.json");
+const provinces = require("../../../../Cities/provinces.json");
+const cities = require("../../../../Cities/cities.json");
 
 exports.restrictUser = async (req, res, next) => {
   try {
@@ -109,16 +109,11 @@ exports.addAddress = async (req, res, next) => {
       physicalAddress,
     } = req.body;
 
-    //TODO : Validation
-
     const userProvince = provinces.find(
       (provinces) => +provinces.id === +provincesID
     );
 
     const userCity = cities.find((city) => +city.id === +cityID);
-
-    console.log("userProvince", userProvince);
-    console.log("userCity", userCity);
 
     if (!userProvince || !userCity) {
       return errorResponse(res, 404, "Province Or City Not Found !!");
@@ -174,6 +169,46 @@ exports.addAddress = async (req, res, next) => {
       "New Address Added Successfully.",
       updatedUserAddress
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.removeAddress = async (req, res, next) => {
+  try {
+    const { addressID } = req.params;
+    const user = req.user._id;
+
+    if (!isValidObjectId(addressID)) {
+      return errorResponse(res, 409, "Address ID Not Valid !!");
+    }
+
+    const mainUser = await userModel.findById(user);
+
+    const isAddressExist = mainUser.addresses.id(addressID);
+
+    if (!isAddressExist) {
+      return errorResponse(res, 404, "Address Not Found !!");
+    }
+
+    mainUser.addresses.pull(addressID);
+    await mainUser.save();
+
+    return successResponse(res, 200, "Your Address Removed Successfully.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getAllAddresses = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.removeAllAddresses = async (req, res, next) => {
+  try {
   } catch (error) {
     next(error);
   }

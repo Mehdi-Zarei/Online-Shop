@@ -11,6 +11,7 @@ const {
   getAllAddresses,
   removeAllAddresses,
   getAddresses,
+  updateAddress,
 } = require("./users.controller");
 
 //* Middlewares
@@ -19,7 +20,7 @@ const { bodyValidator } = require("../../../middlewares/validator");
 
 //* Validation Schema
 
-const { addressSchema } = require("./validation");
+const { addressSchema, updateAddressSchema } = require("./validation");
 
 //* Routes
 
@@ -62,6 +63,11 @@ router
 
 router
   .route("/users/me/address/:addressID")
-  .get(passport.authenticate("accessToken", { session: false }), getAddresses);
+  .get(passport.authenticate("accessToken", { session: false }), getAddresses)
+  .patch(
+    passport.authenticate("accessToken", { session: false }),
+    bodyValidator(updateAddressSchema),
+    updateAddress
+  );
 
 module.exports = router;

@@ -253,3 +253,25 @@ exports.removeAllAddresses = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getAddresses = async (req, res, next) => {
+  try {
+    const { addressID } = req.params;
+
+    if (!isValidObjectId(addressID)) {
+      return errorResponse(res, 409, "Address ID Not Valid !!");
+    }
+
+    const user = await userModel.findById(req.user._id);
+
+    const address = user.addresses.id(addressID);
+
+    if (!address) {
+      return errorResponse(res, 404, "Address Not Found !!");
+    }
+
+    return successResponse(res, 200, address);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -65,7 +65,7 @@ const userSchema = new mongoose.Schema(
       default: ["USER"],
     },
     provider: {
-      type: String,
+      type: [String],
       enum: ["local", "google"],
       default: ["local"],
     },

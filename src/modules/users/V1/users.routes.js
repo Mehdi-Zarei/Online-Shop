@@ -10,6 +10,7 @@ const {
   removeAddress,
   getAllAddresses,
   removeAllAddresses,
+  getAddresses,
 } = require("./users.controller");
 
 //* Middlewares
@@ -58,4 +59,9 @@ router
     passport.authenticate("accessToken", { session: false }),
     removeAllAddresses
   );
+
+router
+  .route("/users/me/address/:addressID")
+  .get(passport.authenticate("accessToken", { session: false }), getAddresses);
+
 module.exports = router;

@@ -163,12 +163,7 @@ exports.addAddress = async (req, res, next) => {
       )
       .select("-password");
 
-    return successResponse(
-      res,
-      201,
-      "New Address Added Successfully.",
-      updatedUserAddress
-    );
+    return successResponse(res, 201, "New Address Added Successfully.");
   } catch (error) {
     next(error);
   }
@@ -202,19 +197,17 @@ exports.removeAddress = async (req, res, next) => {
 
 exports.getAllAddresses = async (req, res, next) => {
   try {
-    const userAddress = await userModel
-      .findById(req.user._id)
-      .select("addresses")
-      .lean();
+    const user = await userModel.findById(req.user._id).lean();
 
-    if (!userAddress) {
+    const addresses = user.addresses;
+
+    if (!addresses || addresses.length === 0) {
       return errorResponse(
         res,
         404,
         "You have not registered any address yet!!!!"
       );
     }
-    const addresses = userAddress.addresses;
 
     const result = addresses.map((address) => {
       const province = provinces.find((p) => p.id === address.provincesID);
@@ -236,6 +229,26 @@ exports.getAllAddresses = async (req, res, next) => {
 
 exports.removeAllAddresses = async (req, res, next) => {
   try {
+    const user = await userModel.findById(req.user.id);
+
+    const addresses = user.addresses;
+
+    if (!addresses || addresses.length === 0) {
+      return errorResponse(
+        res,
+        404,
+        "You have not registered any address yet!!!!"
+      );
+    }
+
+    user.addresses = [];
+    await user.save();
+
+    return successResponse(
+      res,
+      200,
+      "All your addresses have been successfully deleted."
+    );
   } catch (error) {
     next(error);
   }

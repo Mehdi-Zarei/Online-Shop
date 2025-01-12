@@ -1,5 +1,5 @@
-const provinces = require("../../../Cities/provinces.json");
-const cities = require("../../../Cities/cities.json");
+const provinces = require("../../../../Cities/provinces.json");
+const cities = require("../../../../Cities/cities.json");
 
 exports.getProvinces = async (req, res, next) => {
   try {

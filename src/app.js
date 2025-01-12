@@ -7,8 +7,8 @@ const cors = require("cors");
 
 const { corseOptions } = require("./middlewares/corsOptions");
 const authRoutes = require("./modules/auth/V1/auth.routes");
-const usersRoutes = require("./modules/users/users.routes");
-const locationRoutes = require("./modules/provinces & cities/location.Routes");
+const usersRoutes = require("./modules/users/V1/users.routes");
+const locationRoutes = require("./modules/provinces & cities/V1/location.Routes");
 
 const { errorHandler } = require("./middlewares/errorHandler");
 

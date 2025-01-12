@@ -202,6 +202,33 @@ exports.removeAddress = async (req, res, next) => {
 
 exports.getAllAddresses = async (req, res, next) => {
   try {
+    const userAddress = await userModel
+      .findById(req.user._id)
+      .select("addresses")
+      .lean();
+
+    if (!userAddress) {
+      return errorResponse(
+        res,
+        404,
+        "You have not registered any address yet!!!!"
+      );
+    }
+    const addresses = userAddress.addresses;
+
+    const result = addresses.map((address) => {
+      const province = provinces.find((p) => p.id === address.provincesID);
+
+      const city = cities.find((c) => c.id === address.cityID);
+
+      return {
+        ...address,
+        provincesName: province.name,
+        cityName: city.name,
+      };
+    });
+
+    return successResponse(res, 200, result);
   } catch (error) {
     next(error);
   }

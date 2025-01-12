@@ -275,3 +275,62 @@ exports.getAddresses = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateAddress = async (req, res, next) => {
+  try {
+    const {
+      addressName,
+      postalCode,
+      location,
+      provincesID,
+      cityID,
+      physicalAddress,
+    } = req.body;
+
+    const { addressID } = req.params;
+
+    const user = await userModel.findById(req.user._id);
+
+    const userAddress = user.addresses.id(addressID);
+
+    if (!userAddress) {
+      return errorResponse(res, 404, "Address Not Found !!");
+    }
+
+    userAddress.addressName = addressName || userAddress.addressName;
+    userAddress.postalCode = postalCode || userAddress.postalCode;
+    userAddress.location = location || userAddress.location;
+    userAddress.physicalAddress =
+      physicalAddress || userAddress.physicalAddress;
+
+    //* Check only if provincesID and cityID values ​​are submitted
+
+    if (provincesID || cityID) {
+      const userProvince = provinces.find(
+        (province) => +province.id === +provincesID
+      );
+      const userCity = cities.find((city) => +city.id === +cityID);
+
+      if (!userProvince || !userCity) {
+        return errorResponse(res, 404, "Province Or City Not Found !!");
+      }
+
+      if (userProvince.id !== userCity.province_id) {
+        return errorResponse(
+          res,
+          409,
+          "The selected city and province do not belong to each other."
+        );
+      }
+
+      userAddress.provincesID = provincesID || userAddress.provincesID;
+      userAddress.cityID = cityID || userAddress.cityID;
+    }
+
+    await user.save();
+
+    return successResponse(res, 200, "Your Address Updated Successfully.");
+  } catch (error) {
+    next(error);
+  }
+};

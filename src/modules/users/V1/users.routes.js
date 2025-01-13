@@ -13,6 +13,7 @@ const {
   getAddresses,
   updateAddress,
   getAll,
+  changeRoleToSeller,
 } = require("./users.controller");
 
 //* Middlewares
@@ -74,5 +75,12 @@ router
 router
   .route("/users")
   .get(passport.authenticate("accessToken", { session: false }), getAll);
+
+router
+  .route("/users/:userID/change-to-seller")
+  .patch(
+    passport.authenticate("accessToken", { session: false }),
+    changeRoleToSeller
+  );
 
 module.exports = router;

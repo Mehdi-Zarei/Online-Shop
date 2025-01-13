@@ -7,6 +7,7 @@ const {
 
 const provinces = require("../../../../Cities/provinces.json");
 const cities = require("../../../../Cities/cities.json");
+const { createPagination } = require("../../../helpers/pagination");
 
 exports.restrictUser = async (req, res, next) => {
   try {
@@ -330,6 +331,33 @@ exports.updateAddress = async (req, res, next) => {
     await user.save();
 
     return successResponse(res, 200, "Your Address Updated Successfully.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getAll = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const userRole = req.user.roles;
+
+    if (!userRole.includes("OWNER") && !userRole.includes("ADMIN")) {
+      return errorResponse(res, 403, "You don't have access to this route !!");
+    }
+
+    const users = await userModel
+      .find()
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .select("-password")
+      .lean();
+
+    const totalUsers = await userModel.countDocuments();
+
+    const pagination = createPagination(page, limit, totalUsers, "Users");
+
+    return successResponse(res, 200, { users, pagination });
   } catch (error) {
     next(error);
   }

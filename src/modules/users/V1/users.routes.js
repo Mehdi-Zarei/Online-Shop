@@ -13,12 +13,13 @@ const {
   getAddresses,
   updateAddress,
   getAll,
-  changeRoleToSeller,
+  changeRoles,
 } = require("./users.controller");
 
 //* Middlewares
 
 const { bodyValidator } = require("../../../middlewares/validator");
+const rolesGuard = require("../../../middlewares/rolesGuard");
 
 //* Validation Schema
 
@@ -77,10 +78,7 @@ router
   .get(passport.authenticate("accessToken", { session: false }), getAll);
 
 router
-  .route("/users/:userID/change-to-seller")
-  .patch(
-    passport.authenticate("accessToken", { session: false }),
-    changeRoleToSeller
-  );
+  .route("/users/:userID/change-roles")
+  .patch(rolesGuard(["OWNER"]), changeRoles);
 
 module.exports = router;

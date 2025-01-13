@@ -152,7 +152,7 @@ exports.addAddress = async (req, res, next) => {
       physicalAddress,
     };
 
-    const updatedUserAddress = await userModel
+    await userModel
       .findByIdAndUpdate(
         req.user.id,
         {

@@ -3,10 +3,11 @@ const router = express.Router();
 const passport = require("passport");
 
 //* Controller
-const { register } = require("./seller.controller");
+const { register, activateStore } = require("./seller.controller");
 
 //* Middleware
 const { bodyValidator } = require("../../../middlewares/validator");
+const rolesGuard = require("../../../middlewares/rolesGuard");
 
 //* Validator Schema
 const { createSellerSchema } = require("./seller.validator");
@@ -19,5 +20,9 @@ router
     bodyValidator(createSellerSchema),
     register
   );
+
+router
+  .route("/seller/activate/:storeID")
+  .post(rolesGuard(["OWNER", "ADMIN"]), activateStore);
 
 module.exports = router;

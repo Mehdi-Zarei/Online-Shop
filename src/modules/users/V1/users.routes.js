@@ -12,6 +12,7 @@ const {
   removeAllAddresses,
   getAddresses,
   updateAddress,
+  getAll,
 } = require("./users.controller");
 
 //* Middlewares
@@ -69,5 +70,9 @@ router
     bodyValidator(updateAddressSchema),
     updateAddress
   );
+
+router
+  .route("/users")
+  .get(passport.authenticate("accessToken", { session: false }), getAll);
 
 module.exports = router;

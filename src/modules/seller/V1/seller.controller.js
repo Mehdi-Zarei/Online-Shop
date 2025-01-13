@@ -1,4 +1,7 @@
+const { isValidObjectId } = require("mongoose");
+
 const sellerModel = require("../../../../models/seller");
+const usersModel = require("../../../../models/users");
 
 const provinces = require("../../../../Cities/provinces.json");
 const cities = require("../../../../Cities/cities.json");
@@ -8,6 +11,7 @@ const {
   errorResponse,
   successResponse,
 } = require("../../../helpers/responseMessage");
+const { sendVerificationEmail } = require("../../../utils/nodemailer");
 
 exports.register = async (req, res, next) => {
   try {
@@ -77,6 +81,51 @@ exports.register = async (req, res, next) => {
       "Your store information has been successfully submitted and you will be notified of its approval or rejection after review.",
       newSeller
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.activateStore = async (req, res, next) => {
+  try {
+    const { storeID } = req.params;
+
+    if (!isValidObjectId(storeID)) {
+      return errorResponse(res, 409, "Store ID Not Valid !!");
+    }
+
+    const isStoreExisted = await sellerModel.findById(storeID);
+
+    if (!isStoreExisted) {
+      return errorResponse(res, 404, "Store Not Found !!");
+    }
+
+    if (isStoreExisted.isActive) {
+      return errorResponse(res, 409, "This Store Already Is Actives !!");
+    }
+
+    const isTheSellerBanned = await usersModel.findById(isStoreExisted.userID);
+
+    if (isTheSellerBanned.isRestrict) {
+      return errorResponse(res, 404, "Seller Already Is Banned !!");
+    }
+
+    isStoreExisted.isActive = true;
+    await isStoreExisted.save();
+
+    isTheSellerBanned.roles = ["USER", "SELLER"];
+    await isTheSellerBanned.save();
+
+    const subject = "تبریک !!  فروشگاه شما فعال شد";
+
+    const text = `
+    <p>سلام ${isTheSellerBanned.name} عزیز،</p>
+    <p>درخواست ایجاد فروشندگی شما با موفقیت مورد پذیرش واقع گردید،جهت دریافت اطلاعات بیشتر میتونی وارد پنل کاربری بشید </p>
+    `;
+
+    await sendVerificationEmail(isTheSellerBanned, subject, text);
+
+    return successResponse(res, 200, "Store Active Successfully.");
   } catch (error) {
     next(error);
   }

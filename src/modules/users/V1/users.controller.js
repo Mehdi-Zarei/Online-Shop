@@ -362,3 +362,56 @@ exports.getAll = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.changeRoleToSeller = async (req, res, next) => {
+  try {
+    const { userID } = req.params;
+    const { role } = req.body;
+
+    const isOwnerOrAdmin = await userModel.findOne({ _id: req.user._id });
+
+    if (
+      !isOwnerOrAdmin.roles.includes("OWNER") &&
+      !isOwnerOrAdmin.roles.includes("ADMIN")
+    ) {
+      return errorResponse(res, 403, "You don't have access to this route !!");
+    }
+
+    if (!isValidObjectId(userID)) {
+      return errorResponse(res, 409, "User ID Not Valid !!");
+    }
+
+    const isUserExist = await userModel
+      .findOne({ _id: userID })
+      .select("-password");
+
+    if (!isUserExist) {
+      return errorResponse(res, 404, "User Not Found !! ");
+    }
+
+    if (isUserExist.isRestrict) {
+      return errorResponse(
+        res,
+        409,
+        "This user is ban and can't be seller !! ",
+        isUserExist
+      );
+    }
+
+    if (isUserExist.roles.includes("SELLER")) {
+      return errorResponse(res, 409, "This user already is a seller !!");
+    }
+
+    isUserExist.roles.push(role);
+
+    await isUserExist.save();
+
+    return successResponse(
+      res,
+      200,
+      "User role changed to seller successfully."
+    );
+  } catch (error) {
+    next(error);
+  }
+};

@@ -363,27 +363,16 @@ exports.getAll = async (req, res, next) => {
   }
 };
 
-exports.changeRoleToSeller = async (req, res, next) => {
+exports.changeRoles = async (req, res, next) => {
   try {
     const { userID } = req.params;
     const { role } = req.body;
-
-    const isOwnerOrAdmin = await userModel.findOne({ _id: req.user._id });
-
-    if (
-      !isOwnerOrAdmin.roles.includes("OWNER") &&
-      !isOwnerOrAdmin.roles.includes("ADMIN")
-    ) {
-      return errorResponse(res, 403, "You don't have access to this route !!");
-    }
 
     if (!isValidObjectId(userID)) {
       return errorResponse(res, 409, "User ID Not Valid !!");
     }
 
-    const isUserExist = await userModel
-      .findOne({ _id: userID })
-      .select("-password");
+    const isUserExist = await userModel.findById(userID).select("-password");
 
     if (!isUserExist) {
       return errorResponse(res, 404, "User Not Found !! ");
@@ -393,23 +382,36 @@ exports.changeRoleToSeller = async (req, res, next) => {
       return errorResponse(
         res,
         409,
-        "This user is ban and can't be seller !! ",
+        "This user is ban and can't be change role !! ",
         isUserExist
       );
     }
 
-    if (isUserExist.roles.includes("SELLER")) {
-      return errorResponse(res, 409, "This user already is a seller !!");
+    if (isUserExist.roles.includes(role)) {
+      return errorResponse(res, 409, `This user role already is a ${role} !!`);
     }
 
-    isUserExist.roles.push(role);
-
+    if (role === "OWNER") {
+      isUserExist.roles = ["OWNER"];
+    } else if (role === "ADMIN") {
+      isUserExist.roles = ["ADMIN"];
+    } else if (role === "AUTHOR") {
+      isUserExist.roles = ["AUTHOR"];
+    } else if (role === "SELLER") {
+      isUserExist.roles = ["USER", "SELLER"];
+    } else {
+      return errorResponse(
+        res,
+        409,
+        `${role} Not Valid !! Only the roles (OWNER - ADMIN - AUTHOR And SELLER) are allowed.`
+      );
+    }
     await isUserExist.save();
 
     return successResponse(
       res,
       200,
-      "User role changed to seller successfully."
+      `User role changed to ${role} successfully.`
     );
   } catch (error) {
     next(error);

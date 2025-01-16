@@ -260,6 +260,31 @@ exports.removeSellerStore = async (req, res, next) => {
 
 exports.getInfo = async (req, res, next) => {
   try {
+    const { storeID } = req.params;
+
+    if (!isValidObjectId(storeID)) {
+      return errorResponse(res, 409, "Store ID Not Valid !!");
+    }
+
+    const sellerStore = await sellerModel
+      .findById(storeID)
+      .populate("userID", "-password");
+
+    if (!sellerStore) {
+      return errorResponse(res, 404, "Store Not Found !!");
+    }
+
+    console.log("mainUser", req.user.roles);
+    console.log("sellerStore", sellerStore.userID.toString());
+
+    if (
+      !req.user.roles.some((role) => ["OWNER", "ADMIN"].includes(role)) &&
+      sellerStore.userID.toString() !== req.user.id.toString()
+    ) {
+      return errorResponse(res, 403, "You Don't Have Access To This Route !!");
+    }
+
+    return successResponse(res, 200, sellerStore);
   } catch (error) {
     next(error);
   }

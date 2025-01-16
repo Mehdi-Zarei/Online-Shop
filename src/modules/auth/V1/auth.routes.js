@@ -32,46 +32,46 @@ const {
 
 //* Routes
 
-router.route("/auth/sent").post(bodyValidator(phoneNumberSchema), sent);
+router.route("/sent").post(bodyValidator(phoneNumberSchema), sent);
 
-router.route("/auth/verify").post(bodyValidator(registerSchema), verify);
+router.route("/verify").post(bodyValidator(registerSchema), verify);
 
 router
-  .route("/auth/login")
+  .route("/login")
   .post(
     bodyValidator(loginSchema),
     passport.authenticate("local", { session: false }),
     login
   );
 
-router.route("/auth/login-otp").post(loginWithOtp);
+router.route("/login-otp").post(loginWithOtp);
 
 router
-  .route("/auth/google")
+  .route("/google")
   .get(passport.authenticate("google", { scope: ["profile", "email"] }));
 
 router
-  .route("/auth/google/callback")
+  .route("/google/callback")
   .get(passport.authenticate("google", { session: false }), login);
 
 router
-  .route("/auth/me")
+  .route("/me")
   .get(passport.authenticate("accessToken", { session: false }), getMe);
 
 router
-  .route("/auth/refresh")
+  .route("/refresh")
   .get(passport.authenticate("refreshToken", { session: false }), refreshToken);
 
 router
-  .route("/auth/forget-password")
+  .route("/forget-password")
   .post(bodyValidator(forgetPasswordSchema), forgetPassword);
 
 router
-  .route("/auth/reset-password/:token")
+  .route("/reset-password/:token")
   .post(bodyValidator(resetPasswordSchema), resetPassword);
 
 router
-  .route("/auth/logout")
+  .route("/logout")
   .post(passport.authenticate("accessToken", { session: false }), logOut);
 
 module.exports = router;

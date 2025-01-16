@@ -17,7 +17,10 @@ const { bodyValidator } = require("../../../middlewares/validator");
 const rolesGuard = require("../../../middlewares/rolesGuard");
 
 //* Validator Schema
-const { createSellerSchema } = require("./seller.validator");
+const {
+  createSellerSchema,
+  updateInfoSellerSchema,
+} = require("./seller.validator");
 
 //* Routes
 router
@@ -40,6 +43,7 @@ router
   .route("/seller/updateInfo/:storeID")
   .patch(
     passport.authenticate("accessToken", { session: false }),
+    bodyValidator(updateInfoSellerSchema),
     updateSellerInfo
   );
 

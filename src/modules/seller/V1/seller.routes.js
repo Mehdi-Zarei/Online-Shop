@@ -24,7 +24,7 @@ const {
 
 //* Routes
 router
-  .route("/seller/register")
+  .route("/register")
   .post(
     passport.authenticate("accessToken", { session: false }),
     bodyValidator(createSellerSchema),
@@ -32,15 +32,15 @@ router
   );
 
 router
-  .route("/seller/activate/:storeID")
+  .route("/activate/:storeID")
   .post(rolesGuard(["OWNER", "ADMIN"]), activateStore);
 
 router
-  .route("/seller/deactivate/:storeID")
+  .route("/deactivate/:storeID")
   .post(rolesGuard(["OWNER", "ADMIN"]), deactivateStore);
 
 router
-  .route("/seller/updateInfo/:storeID")
+  .route("/updateInfo/:storeID")
   .patch(
     passport.authenticate("accessToken", { session: false }),
     bodyValidator(updateInfoSellerSchema),
@@ -48,7 +48,7 @@ router
   );
 
 router
-  .route("/seller/:storeID")
+  .route("/:storeID")
   .delete(
     passport.authenticate("accessToken", { session: false }),
     removeSellerStore

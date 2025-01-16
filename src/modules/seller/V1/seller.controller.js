@@ -224,6 +224,35 @@ exports.updateSellerInfo = async (req, res, next) => {
 
 exports.removeSellerStore = async (req, res, next) => {
   try {
+    const { storeID } = req.params;
+
+    if (!isValidObjectId(storeID)) {
+      return errorResponse(res, 409, "Store ID Not Valid !!");
+    }
+
+    const isSellerExist = await sellerModel.findById(storeID);
+
+    if (!isSellerExist) {
+      return errorResponse(res, 404, "Store Not Found !!");
+    }
+
+    if (req.user.roles.some((role) => ["OWNER", "ADMIN"].includes(role))) {
+      await sellerModel.findByIdAndDelete(isSellerExist._id);
+
+      return successResponse(
+        res,
+        200,
+        `Store Removed By ${req.user.roles.join(", ")} Successfully.`
+      );
+    }
+
+    if (isSellerExist.userID.toString() !== req.user.id.toString()) {
+      return errorResponse(res, 403, "You Don't Have Access To This Route !!");
+    }
+
+    await sellerModel.findByIdAndDelete(isSellerExist._id);
+
+    return successResponse(res, 200, "Store Removed By Seller Successfully.");
   } catch (error) {
     next(error);
   }

@@ -171,6 +171,52 @@ exports.deactivateStore = async (req, res, next) => {
 
 exports.updateSellerInfo = async (req, res, next) => {
   try {
+    const { storeID } = req.params;
+
+    if (!isValidObjectId(storeID)) {
+      return errorResponse(res, 409, "Store ID Not Valid !!");
+    }
+
+    const {
+      storeName,
+      contactDetails,
+      location,
+      provincesID,
+      cityID,
+      physicalAddress,
+    } = req.body;
+
+    //TODO : Validation
+
+    const isSellerExist = await sellerModel.findById(storeID);
+
+    if (!isSellerExist) {
+      return errorResponse(res, 404, "Store Not Found !!");
+    }
+
+    if (isSellerExist.userID.toString() !== req.user.id.toString()) {
+      return errorResponse(res, 403, "You Don't Have Access To This Route !!");
+    }
+
+    const updateInfo = await sellerModel.findByIdAndUpdate(
+      storeID,
+      {
+        storeName,
+        contactDetails,
+        location,
+        provincesID,
+        cityID,
+        physicalAddress,
+      },
+      { new: true }
+    );
+
+    return successResponse(
+      res,
+      200,
+      "Your Information Updated SuccessFully.",
+      updateInfo
+    );
   } catch (error) {
     next(error);
   }

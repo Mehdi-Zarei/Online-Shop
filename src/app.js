@@ -38,10 +38,10 @@ passport.use("refreshToken", passportRefreshToken);
 
 //* Import Routes
 
-app.use("/api/v1", authRoutes);
-app.use("/api/v1", usersRoutes);
-app.use("/api/v1", sellerRouter);
-app.use("/api/v1", locationRoutes);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", usersRoutes);
+app.use("/api/v1/seller", sellerRouter);
+app.use("/api/v1/location", locationRoutes);
 
 //* 404 Error Handler
 

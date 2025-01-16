@@ -28,18 +28,18 @@ const { addressSchema, updateAddressSchema } = require("./validation");
 //* Routes
 
 router
-  .route("/users/restrictUser/:userID")
+  .route("/restrictUser/:userID")
   .put(passport.authenticate("accessToken", { session: false }), restrictUser);
 
 router
-  .route("/users/unRestrictUser/:userID")
+  .route("/unRestrictUser/:userID")
   .put(
     passport.authenticate("accessToken", { session: false }),
     unRestrictUser
   );
 
 router
-  .route("/users/me/addresses")
+  .route("/me/addresses")
   .post(
     passport.authenticate("accessToken", { session: false }),
     bodyValidator(addressSchema),
@@ -47,14 +47,14 @@ router
   );
 
 router
-  .route("/users/me/address/:addressID/remove")
+  .route("/me/address/:addressID/remove")
   .delete(
     passport.authenticate("accessToken", { session: false }),
     removeAddress
   );
 
 router
-  .route("/users/me/addresses")
+  .route("/me/addresses")
   .get(
     passport.authenticate("accessToken", { session: false }),
     getAllAddresses
@@ -65,7 +65,7 @@ router
   );
 
 router
-  .route("/users/me/address/:addressID")
+  .route("/me/address/:addressID")
   .get(passport.authenticate("accessToken", { session: false }), getAddresses)
   .patch(
     passport.authenticate("accessToken", { session: false }),
@@ -74,11 +74,9 @@ router
   );
 
 router
-  .route("/users")
+  .route("/")
   .get(passport.authenticate("accessToken", { session: false }), getAll);
 
-router
-  .route("/users/:userID/change-roles")
-  .patch(rolesGuard(["OWNER"]), changeRoles);
+router.route("/:userID/change-roles").patch(rolesGuard(["OWNER"]), changeRoles);
 
 module.exports = router;

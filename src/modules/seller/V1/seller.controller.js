@@ -250,7 +250,10 @@ exports.removeSellerStore = async (req, res, next) => {
       return errorResponse(res, 403, "You Don't Have Access To This Route !!");
     }
 
-    await sellerModel.findByIdAndDelete(isSellerExist._id);
+    isSellerExist.deleteOne();
+
+    //TODO : Deleted Seller Products
+    //TODO : Deleted Seller Products From User Shopping Basket
 
     return successResponse(res, 200, "Store Removed By Seller Successfully.");
   } catch (error) {

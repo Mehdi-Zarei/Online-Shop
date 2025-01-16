@@ -130,3 +130,62 @@ exports.activateStore = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.deactivateStore = async (req, res, next) => {
+  try {
+    const { storeID } = req.params;
+
+    if (!isValidObjectId(storeID)) {
+      return errorResponse(res, 409, "Store ID Not Valid !!");
+    }
+
+    const isStoreExisted = await sellerModel.findById(storeID);
+
+    if (!isStoreExisted) {
+      return errorResponse(res, 404, "Store Not Found !!");
+    }
+
+    if (!isStoreExisted.isActive) {
+      return errorResponse(res, 409, "This Store Already Is Deactivate !!");
+    }
+
+    isStoreExisted.isActive = false;
+    await isStoreExisted.save();
+
+    const seller = await usersModel.findById(isStoreExisted.userID);
+
+    const subject = "متاسفیم !!  فروشگاه شما غیر فعال شد";
+
+    const text = `
+    <p>سلام ${seller.name} عزیز،</p>
+    <p>متاسفانه فروشگاه شما غیر فعال شده است.لطفا جهت دریافت اطلاعات بیشتر به پنل کاربری خودتون مراجعه کنید </p>
+    `;
+
+    await sendVerificationEmail(seller, subject, text);
+
+    return successResponse(res, 200, "Store Deactivate Successfully.");
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateSellerInfo = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.removeSellerStore = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getInfo = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};

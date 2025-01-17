@@ -1,16 +1,19 @@
 const { isValidObjectId } = require("mongoose");
 const fs = require("fs");
+
 const categoryModel = require("../../../../models/category");
 const subCategoryModel = require("../../../../models/subCategory");
+const childSubCategoryModel = require("../../../../models/child-subCategory");
 
 const {
   successResponse,
   errorResponse,
 } = require("../../../helpers/responseMessage");
 
-exports.createCategory = async (req, res, next) => {
+//* Start Main Categories Functions
+exports.createMainCategory = async (req, res, next) => {
   try {
-    let { title, slug, parent, description, filters } = req.body;
+    let { title, slug, description, filters } = req.body;
     filters = JSON.parse(filters);
 
     //Todo : Validator
@@ -33,7 +36,6 @@ exports.createCategory = async (req, res, next) => {
     const newCategory = await categoryModel.create({
       title,
       slug,
-      parent,
       description,
       filters,
       icon,
@@ -45,7 +47,20 @@ exports.createCategory = async (req, res, next) => {
   }
 };
 
-exports.updateCategory = async (req, res, next) => {
+exports.getAllMainCategories = async (req, res, next) => {
+  try {
+    const categories = await categoryModel.find({}, "-__v");
+
+    if (categories.length === 0) {
+      return errorResponse(res, 404, "You don't have any categories yet !!");
+    }
+    return successResponse(res, 200, categories);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateMainCategory = async (req, res, next) => {
   try {
     const { categoryID } = req.params;
 
@@ -90,7 +105,7 @@ exports.updateCategory = async (req, res, next) => {
   }
 };
 
-exports.removeCategory = async (req, res, next) => {
+exports.removeMainCategory = async (req, res, next) => {
   try {
     const { categoryID } = req.params;
 
@@ -117,7 +132,9 @@ exports.removeCategory = async (req, res, next) => {
     next(error);
   }
 };
+//! End Main Categories Functions
 
+//* Start Sub Categories Functions
 exports.createSubCategory = async (req, res, next) => {
   try {
     const { title, slug, parent, description, filters } = req.body;
@@ -127,7 +144,7 @@ exports.createSubCategory = async (req, res, next) => {
     const isSubCategoryExist = await subCategoryModel.findOne({ title, slug });
 
     if (isSubCategoryExist) {
-      return errorResponse(res, 409, "This Category Already Exist !!");
+      return errorResponse(res, 409, "This Sub Category Already Exist !!");
     }
 
     const isParentExist = await categoryModel.findById(parent);
@@ -154,3 +171,47 @@ exports.createSubCategory = async (req, res, next) => {
     next(error);
   }
 };
+
+//! End Sub Categories Functions
+
+//* Start  Child Sub Categories Functions
+exports.createChildSubCategory = async (req, res, next) => {
+  try {
+    const { title, slug, parent, description, filters } = req.body;
+
+    //Todo : Validator
+
+    const isChildSubCategoryExist = await childSubCategoryModel.findOne({
+      title,
+      slug,
+    });
+
+    if (isChildSubCategoryExist) {
+      return errorResponse(res, 409, "This Sub Category Already Exist !!");
+    }
+
+    const isParentExist = await subCategoryModel.findById(parent);
+
+    if (!isParentExist) {
+      return errorResponse(res, 404, "Parent ID Not Found !!");
+    }
+
+    const newChildSubCategory = await childSubCategoryModel.create({
+      title,
+      slug,
+      parent,
+      description,
+      filters,
+    });
+
+    return successResponse(
+      res,
+      201,
+      "New Child Sub Category Created Successfully.",
+      newChildSubCategory
+    );
+  } catch (error) {
+    next(error);
+  }
+};
+//! End Child Sub Categories Functions

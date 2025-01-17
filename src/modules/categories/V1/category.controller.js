@@ -46,6 +46,44 @@ exports.createCategory = async (req, res, next) => {
 
 exports.updateCategory = async (req, res, next) => {
   try {
+    const { categoryID } = req.params;
+
+    let { title, slug, parent, description, filters } = req.body;
+    filters = JSON.parse(filters);
+
+    //Todo : Validator
+
+    if (!isValidObjectId(categoryID)) {
+      return errorResponse(res, 409, "Category ID Not Valid !!");
+    }
+    let icon = null;
+
+    if (req.file) {
+      icon = {
+        filename: req.file.filename,
+        path: `public/icon/category/${req.file.filename}`,
+      };
+    }
+
+    const updateCategory = await categoryModel.findByIdAndUpdate(categoryID, {
+      title,
+      slug,
+      parent,
+      description,
+      filters,
+      icon,
+    });
+
+    if (updateCategory) {
+      const pathIcon = updateCategory.icon.path;
+
+      fs.unlinkSync(pathIcon, (err) => {
+        next(err);
+      });
+
+      return successResponse(res, 200, "Category Updated Successfully.");
+    }
+    return errorResponse(res, 404, "Category Not Found For Update !!");
   } catch (error) {
     next(error);
   }
@@ -61,22 +99,19 @@ exports.removeCategory = async (req, res, next) => {
 
     const remove = await categoryModel.findByIdAndDelete(categoryID);
 
-    if (remove) {
-      const pathIcon = remove.icon.path;
-
-      fs.unlinkSync(pathIcon, (err) => {
-        next(err);
-      });
-
-      return successResponse(
-        res,
-        200,
-        "Category Deleted Successfully.",
-        remove
-      );
+    if (!remove) {
+      return errorResponse(res, 404, "Category Not Found !!");
     }
 
-    return errorResponse(res, 404, "Category Not Found !!");
+    const pathIcon = remove.icon?.path;
+
+    if (pathIcon) {
+      fs.unlinkSync(pathIcon, (err) => {
+        return next(err);
+      });
+    }
+
+    return successResponse(res, 200, "Category Deleted Successfully.", remove);
   } catch (error) {
     next(error);
   }

@@ -16,23 +16,42 @@ const rolesGuard = require("../../../middlewares/rolesGuard");
 
 //* Controller
 const {
-  createCategory,
-  updateCategory,
-  removeCategory,
+  createMainCategory,
+  getAllMainCategories,
+  updateMainCategory,
+  removeMainCategory,
   createSubCategory,
+  createChildSubCategory,
 } = require("./category.controller");
 
-//* Routes
+//* Main Categories Routes
 
 router
   .route("/")
-  .post(upload.single("icon"), rolesGuard(["OWNER", "ADMIN"]), createCategory);
+  .post(
+    upload.single("icon"),
+    rolesGuard(["OWNER", "ADMIN"]),
+    createMainCategory
+  )
+  .get(getAllMainCategories);
 
 router
   .route("/:categoryID")
-  .put(upload.single("icon"), rolesGuard(["OWNER", "ADMIN"]), updateCategory)
-  .delete(rolesGuard(["OWNER", "ADMIN"]), removeCategory);
+  .put(
+    upload.single("icon"),
+    rolesGuard(["OWNER", "ADMIN"]),
+    updateMainCategory
+  )
+  .delete(rolesGuard(["OWNER", "ADMIN"]), removeMainCategory);
 
-router.route("/sub/").post(rolesGuard(["OWNER", "ADMIN"]), createSubCategory);
+//* Sub Categories Routes
+
+router.route("/sub").post(rolesGuard(["OWNER", "ADMIN"]), createSubCategory);
+
+//* Child Sub Categories Routes
+
+router
+  .route("/sub/child")
+  .post(rolesGuard(["OWNER", "ADMIN"]), createChildSubCategory);
 
 module.exports = router;

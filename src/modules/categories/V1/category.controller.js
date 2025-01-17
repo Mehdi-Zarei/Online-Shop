@@ -1,6 +1,7 @@
 const { isValidObjectId } = require("mongoose");
 const fs = require("fs");
 const categoryModel = require("../../../../models/category");
+const subCategoryModel = require("../../../../models/subCategory");
 
 const {
   successResponse,
@@ -112,6 +113,43 @@ exports.removeCategory = async (req, res, next) => {
     }
 
     return successResponse(res, 200, "Category Deleted Successfully.", remove);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.createSubCategory = async (req, res, next) => {
+  try {
+    const { title, slug, parent, description, filters } = req.body;
+
+    //Todo : Validator
+
+    const isSubCategoryExist = await subCategoryModel.findOne({ title, slug });
+
+    if (isSubCategoryExist) {
+      return errorResponse(res, 409, "This Category Already Exist !!");
+    }
+
+    const isParentExist = await categoryModel.findById(parent);
+
+    if (!isParentExist) {
+      return errorResponse(res, 404, "Parent ID Not Found !!");
+    }
+
+    const newSubCategory = await subCategoryModel.create({
+      title,
+      slug,
+      parent,
+      description,
+      filters,
+    });
+
+    return successResponse(
+      res,
+      201,
+      "SubCategory Created Successfully.",
+      newSubCategory
+    );
   } catch (error) {
     next(error);
   }

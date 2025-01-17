@@ -19,6 +19,7 @@ const {
   createCategory,
   updateCategory,
   removeCategory,
+  createSubCategory,
 } = require("./category.controller");
 
 //* Routes
@@ -31,5 +32,7 @@ router
   .route("/:categoryID")
   .put(upload.single("icon"), rolesGuard(["OWNER", "ADMIN"]), updateCategory)
   .delete(rolesGuard(["OWNER", "ADMIN"]), removeCategory);
+
+router.route("/sub/").post(rolesGuard(["OWNER", "ADMIN"]), createSubCategory);
 
 module.exports = router;

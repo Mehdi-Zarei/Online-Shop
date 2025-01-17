@@ -10,6 +10,7 @@ const authRoutes = require("./modules/auth/V1/auth.routes");
 const usersRoutes = require("./modules/users/V1/users.routes");
 const locationRoutes = require("./modules/provinces & cities/V1/location.Routes");
 const sellerRouter = require("./modules/seller/V1/seller.routes");
+const categoryRouter = require("./modules/categories/V1/category.routes");
 
 const { errorHandler } = require("./middlewares/errorHandler");
 
@@ -23,7 +24,7 @@ const passportRefreshToken = require("./strategies/passport-refreshToken");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/public", express.static(path.join(__dirname, "..", "public")));
 
 //* Third-party Middleware
 
@@ -42,6 +43,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/seller", sellerRouter);
 app.use("/api/v1/location", locationRoutes);
+app.use("/api/v1/categories", categoryRouter);
 
 //* 404 Error Handler
 

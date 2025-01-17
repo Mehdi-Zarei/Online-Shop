@@ -13,11 +13,6 @@ const categorySchema = new mongoose.Schema({
     trim: true,
     unique: true,
   },
-  parent: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category",
-    default: undefined,
-  },
   description: {
     type: String,
     trim: true,

@@ -5,6 +5,7 @@ const categorySchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true,
+    unique: true,
   },
   slug: {
     type: String,
@@ -15,6 +16,7 @@ const categorySchema = new mongoose.Schema({
   parent: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Category",
+    default: undefined,
   },
   description: {
     type: String,
@@ -30,7 +32,7 @@ const categorySchema = new mongoose.Schema({
     {
       name: { type: String, required: true, trim: true },
       type: { type: String, enum: ["radio", "selectbox"], required: true },
-      options: [{ type: String }],
+      options: [{ type: String, default: undefined }],
     },
   ],
 });

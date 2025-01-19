@@ -19,6 +19,7 @@ const rolesGuard = require("../../../middlewares/rolesGuard");
 const {
   categorySchema,
   updateCategorySchema,
+  subCategorySchema,
 } = require("./category.validators");
 
 //* Controller
@@ -63,7 +64,11 @@ router
 
 router
   .route("/sub")
-  .post(rolesGuard(["OWNER", "ADMIN"]), createSubCategory)
+  .post(
+    rolesGuard(["OWNER", "ADMIN"]),
+    bodyValidator(subCategorySchema),
+    createSubCategory
+  )
   .get(getAllSubCategories);
 router
   .route("/sub/:subCategoryID")

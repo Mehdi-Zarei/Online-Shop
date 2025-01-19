@@ -195,6 +195,42 @@ exports.createSubCategory = async (req, res, next) => {
   }
 };
 
+exports.getAllSubCategories = async (req, res, next) => {
+  try {
+    const subCategories = await subCategoryModel
+      .find()
+      .populate("child")
+      .populate("parent")
+      .lean();
+
+    if (subCategories.length === 0) {
+      return errorResponse(
+        res,
+        404,
+        "You don't have any sub categories yet !!"
+      );
+    }
+
+    return successResponse(res, 200, subCategories);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateSubCategory = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.removeSubCategory = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
 //! End Sub Categories Functions
 
 //* Start  Child Sub Categories Functions
@@ -237,4 +273,26 @@ exports.createChildSubCategory = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.getAllChildSubCategories = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateChildSubCategory = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.removeChildSubCategory = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
 //! End Child Sub Categories Functions

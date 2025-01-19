@@ -170,8 +170,6 @@ exports.createSubCategory = async (req, res, next) => {
   try {
     const { title, slug, parent, description, filters } = req.body;
 
-    //Todo : Validator
-
     const isSubCategoryExist = await subCategoryModel.findOne({ title, slug });
 
     if (isSubCategoryExist) {
@@ -231,8 +229,6 @@ exports.updateSubCategory = async (req, res, next) => {
     const { subCategoryID } = req.params;
 
     const { title, slug, parent, description, filters } = req.body;
-
-    //todo: validator
 
     if (!isValidObjectId(subCategoryID)) {
       return errorResponse(res, 409, "Sub Category ID Not Valid !!");

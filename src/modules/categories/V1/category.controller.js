@@ -236,6 +236,8 @@ exports.updateSubCategory = async (req, res, next) => {
 
     const { title, slug, parent, description, filters } = req.body;
 
+    //todo: validator
+
     if (!isValidObjectId(subCategoryID)) {
       return errorResponse(res, 409, "Sub Category ID Not Valid !!");
     }
@@ -353,6 +355,44 @@ exports.getAllChildSubCategories = async (req, res, next) => {
 
 exports.updateChildSubCategory = async (req, res, next) => {
   try {
+    const { childSubCategoryID } = req.params;
+
+    if (!isValidObjectId(childSubCategoryID)) {
+      return errorResponse(res, 409, "Child Sub Category ID Not Valid !!");
+    }
+
+    const { title, slug, parent, description, filters } = req.body;
+
+    //Todo : Validator
+
+    const update = await childSubCategoryModel.findByIdAndUpdate(
+      childSubCategoryID,
+      {
+        title,
+        slug,
+        parent,
+        description,
+        filters,
+      },
+      { new: true }
+    );
+
+    if (!update) {
+      return errorResponse(
+        res,
+        409,
+        "Child Sub Category Not Found Whit This ID !!"
+      );
+    }
+
+    return successResponse(
+      res,
+      200,
+      "Child Sub Category Updated Successfully.",
+      {
+        childSubCategory: update,
+      }
+    );
   } catch (error) {
     next(error);
   }

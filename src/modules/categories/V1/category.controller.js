@@ -113,13 +113,27 @@ exports.removeMainCategory = async (req, res, next) => {
       return errorResponse(res, 409, "Category ID Not Valid !!");
     }
 
-    const remove = await categoryModel.findByIdAndDelete(categoryID);
+    const removeMainCategory = await categoryModel.findByIdAndDelete(
+      categoryID
+    );
 
-    if (!remove) {
+    if (!removeMainCategory) {
       return errorResponse(res, 404, "Category Not Found !!");
     }
 
-    const pathIcon = remove.icon?.path;
+    const subCategory = await subCategoryModel.find({ parent: categoryID });
+
+    const extractSubCategoriesIds = subCategory.map((sub) => sub._id);
+
+    const childSubCategory = await childSubCategoryModel.find({
+      parent: { $in: extractSubCategoriesIds },
+    });
+
+    await subCategoryModel.deleteMany({ parent: categoryID });
+
+    await childSubCategoryModel.deleteMany({ parent: extractSubCategoriesIds });
+
+    const pathIcon = removeMainCategory.icon?.path;
 
     if (pathIcon) {
       fs.unlinkSync(pathIcon, (err) => {
@@ -127,7 +141,16 @@ exports.removeMainCategory = async (req, res, next) => {
       });
     }
 
-    return successResponse(res, 200, "Category Deleted Successfully.", remove);
+    return successResponse(
+      res,
+      200,
+      "Category With Sub and Child Deleted Successfully.",
+      {
+        category: removeMainCategory,
+        subCategory,
+        childSubCategory,
+      }
+    );
   } catch (error) {
     next(error);
   }

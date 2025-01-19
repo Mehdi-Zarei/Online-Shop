@@ -14,6 +14,13 @@ const upload = multerStorage("public/icon/category", 5, [
 const { bodyValidator } = require("../../../middlewares/validator");
 const rolesGuard = require("../../../middlewares/rolesGuard");
 
+//* Validator Schema
+
+const {
+  categorySchema,
+  updateCategorySchema,
+} = require("./category.validators");
+
 //* Controller
 const {
   createMainCategory,
@@ -37,6 +44,7 @@ router
   .post(
     upload.single("icon"),
     rolesGuard(["OWNER", "ADMIN"]),
+    bodyValidator(categorySchema),
     createMainCategory
   )
   .get(getAllMainCategories);
@@ -46,6 +54,7 @@ router
   .put(
     upload.single("icon"),
     rolesGuard(["OWNER", "ADMIN"]),
+    bodyValidator(updateCategorySchema),
     updateMainCategory
   )
   .delete(rolesGuard(["OWNER", "ADMIN"]), removeMainCategory);

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const categorySchema = new mongoose.Schema({
+const childSubCategorySchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -34,4 +34,4 @@ const categorySchema = new mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model("childSubCategory", categorySchema);
+module.exports = mongoose.model("childSubCategory", childSubCategorySchema);

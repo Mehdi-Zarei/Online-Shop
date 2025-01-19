@@ -288,8 +288,6 @@ exports.createChildSubCategory = async (req, res, next) => {
   try {
     const { title, slug, parent, description, filters } = req.body;
 
-    //Todo : Validator
-
     const isChildSubCategoryExist = await childSubCategoryModel.findOne({
       title,
       slug,
@@ -354,8 +352,6 @@ exports.updateChildSubCategory = async (req, res, next) => {
     }
 
     const { title, slug, parent, description, filters } = req.body;
-
-    //Todo : Validator
 
     const update = await childSubCategoryModel.findByIdAndUpdate(
       childSubCategoryID,

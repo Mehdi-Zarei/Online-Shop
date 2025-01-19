@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const categorySchema = new mongoose.Schema({
+const subCategorySchema = new mongoose.Schema({
   title: {
     type: String,
     required: true,
@@ -34,4 +34,10 @@ const categorySchema = new mongoose.Schema({
   ],
 });
 
-module.exports = mongoose.model("SubCategory", categorySchema);
+subCategorySchema.virtual("child", {
+  ref: "childSubCategory",
+  localField: "_id",
+  foreignField: "parent",
+});
+
+module.exports = mongoose.model("SubCategory", subCategorySchema);

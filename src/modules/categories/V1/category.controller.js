@@ -9,9 +9,6 @@ const {
   successResponse,
   errorResponse,
 } = require("../../../helpers/responseMessage");
-const { json } = require("stream/consumers");
-const subCategory = require("../../../../models/subCategory");
-const childSubCategory = require("../../../../models/child-subCategory");
 
 //* Start Main Categories Functions
 exports.createMainCategory = async (req, res, next) => {
@@ -52,11 +49,23 @@ exports.createMainCategory = async (req, res, next) => {
 
 exports.getAllMainCategories = async (req, res, next) => {
   try {
-    const categories = await categoryModel.find({}, "-__v");
+    const categories = await categoryModel
+      .find()
+      .populate({
+        path: "subCategories",
+        select: "-__v",
+        populate: {
+          path: "child",
+          select: "-__v",
+        },
+      })
+      .select("-__v")
+      .lean();
 
     if (categories.length === 0) {
       return errorResponse(res, 404, "You don't have any categories yet !!");
     }
+
     return successResponse(res, 200, categories);
   } catch (error) {
     next(error);
@@ -202,8 +211,9 @@ exports.getAllSubCategories = async (req, res, next) => {
   try {
     const subCategories = await subCategoryModel
       .find()
-      .populate("child")
-      .populate("parent")
+      .populate("parent", "-__v")
+      .populate("child", "-__v")
+      .select("-__v")
       .lean();
 
     if (subCategories.length === 0) {
@@ -322,6 +332,20 @@ exports.createChildSubCategory = async (req, res, next) => {
 
 exports.getAllChildSubCategories = async (req, res, next) => {
   try {
+    const childSubCategories = await childSubCategoryModel
+      .find()
+      .populate("parent")
+      .lean();
+
+    if (childSubCategories.length === 0) {
+      return errorResponse(
+        res,
+        404,
+        "You don't have any child sub categories yet !!"
+      );
+    }
+
+    return successResponse(res, 200, childSubCategories);
   } catch (error) {
     next(error);
   }
@@ -336,6 +360,28 @@ exports.updateChildSubCategory = async (req, res, next) => {
 
 exports.removeChildSubCategory = async (req, res, next) => {
   try {
+    const { childSubCategoryID } = req.params;
+
+    if (!isValidObjectId(childSubCategoryID)) {
+      return errorResponse(res, 409, "Child Sub Category ID Not Valid !!");
+    }
+
+    const remove = await childSubCategoryModel.findByIdAndDelete(
+      childSubCategoryID
+    );
+
+    if (!remove) {
+      return errorResponse(res, 404, "Child Sub Category Not Found !!");
+    }
+
+    return successResponse(
+      res,
+      200,
+      "Child Sub Category Removed Successfully.",
+      {
+        childSubCategory: remove,
+      }
+    );
   } catch (error) {
     next(error);
   }

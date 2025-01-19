@@ -127,4 +127,46 @@ const subCategorySchema = yup.object().shape({
     }),
 });
 
-module.exports = { categorySchema, updateCategorySchema, subCategorySchema };
+const updateSubCategorySchema = yup.object().shape({
+  title: yup.string().min(3, "Title must be at least 3 characters long"), // Title must be at least 3 characters long
+  slug: yup
+    .string()
+    .matches(
+      /^[a-z0-9-]+$/i,
+      "Slug must contain letters, numbers, and hyphens only"
+    ), // Slug must contain letters, numbers, and hyphens only
+  parent: yup
+    .string()
+    .matches(/^[0-9a-fA-F]{24}$/, "Invalid parent category ID"), // Parent ID must be a valid MongoDB ID
+  description: yup.string().optional(), // Description is optional
+  filters: yup
+    .array()
+    .of(
+      yup.object().shape({
+        name: yup.string(),
+        slug: yup.string(),
+        type: yup.string().oneOf(["selectbox", "radio"], "Invalid filter type"), // Filter type must be either "selectbox" or "radio"
+        description: yup.string().optional(), // Filter description is optional
+        options: yup.array().of(yup.string()),
+      })
+    )
+    .optional() // Filters are optional
+    .transform((value, originalValue) => {
+      // If filters is sent as a JSON string, parse it into an array
+      if (typeof originalValue === "string") {
+        try {
+          return JSON.parse(originalValue);
+        } catch (err) {
+          return originalValue; // If parsing fails, return the original value
+        }
+      }
+      return value; // If it's not a string, return the original value
+    }),
+});
+
+module.exports = {
+  categorySchema,
+  updateCategorySchema,
+  subCategorySchema,
+  updateSubCategorySchema,
+};

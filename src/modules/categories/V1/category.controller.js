@@ -9,6 +9,9 @@ const {
   successResponse,
   errorResponse,
 } = require("../../../helpers/responseMessage");
+const { json } = require("stream/consumers");
+const subCategory = require("../../../../models/subCategory");
+const childSubCategory = require("../../../../models/child-subCategory");
 
 //* Start Main Categories Functions
 exports.createMainCategory = async (req, res, next) => {
@@ -219,6 +222,27 @@ exports.getAllSubCategories = async (req, res, next) => {
 
 exports.updateSubCategory = async (req, res, next) => {
   try {
+    const { subCategoryID } = req.params;
+
+    const { title, slug, parent, description, filters } = req.body;
+
+    if (!isValidObjectId(subCategoryID)) {
+      return errorResponse(res, 409, "Sub Category ID Not Valid !!");
+    }
+
+    const subCategory = await subCategoryModel.findByIdAndUpdate(
+      subCategoryID,
+      { title, slug, parent, description, filters },
+      { new: true }
+    );
+
+    if (!subCategory) {
+      return errorResponse(res, 404, "Sub Category Not Found !!");
+    }
+
+    return successResponse(res, 200, "Sub Category Updated Successfully.", {
+      updateInfo: subCategory,
+    });
   } catch (error) {
     next(error);
   }
@@ -226,6 +250,28 @@ exports.updateSubCategory = async (req, res, next) => {
 
 exports.removeSubCategory = async (req, res, next) => {
   try {
+    const { subCategoryID } = req.params;
+
+    if (!isValidObjectId(subCategoryID)) {
+      return errorResponse(res, 409, "Sub Category ID Not valid !!");
+    }
+
+    const removeSubCategory = await subCategoryModel.findByIdAndDelete(
+      subCategoryID
+    );
+
+    if (!removeSubCategory) {
+      return errorResponse(res, 404, "Sub Category Not Found !!");
+    }
+
+    const removeChildSubCategory = await childSubCategoryModel.deleteMany({
+      parent: removeSubCategory._id,
+    });
+
+    return successResponse(res, 200, "Sub Category Removed Successfully.", {
+      subCategory: removeSubCategory,
+      childSubCategory: removeChildSubCategory,
+    });
   } catch (error) {
     next(error);
   }

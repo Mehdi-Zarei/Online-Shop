@@ -16,8 +16,6 @@ exports.createMainCategory = async (req, res, next) => {
     let { title, slug, description, filters } = req.body;
     filters = JSON.parse(filters);
 
-    //Todo : Validator
-
     const isCategoryExist = await categoryModel.findOne({ title, slug });
 
     if (isCategoryExist) {
@@ -79,8 +77,6 @@ exports.updateMainCategory = async (req, res, next) => {
     let { title, slug, parent, description, filters } = req.body;
     filters = JSON.parse(filters);
 
-    //Todo : Validator
-
     if (!isValidObjectId(categoryID)) {
       return errorResponse(res, 409, "Category ID Not Valid !!");
     }
@@ -103,7 +99,7 @@ exports.updateMainCategory = async (req, res, next) => {
     });
 
     if (updateCategory) {
-      const pathIcon = updateCategory.icon.path;
+      const pathIcon = updateCategory.icon?.path;
 
       fs.unlinkSync(pathIcon, (err) => {
         next(err);

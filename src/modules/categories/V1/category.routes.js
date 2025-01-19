@@ -21,6 +21,8 @@ const {
   updateCategorySchema,
   subCategorySchema,
   updateSubCategorySchema,
+  childSubCategorySchema,
+  updateChildSubCategorySchema,
 } = require("./category.validators");
 
 //* Controller
@@ -84,12 +86,20 @@ router
 
 router
   .route("/sub/child")
-  .post(rolesGuard(["OWNER", "ADMIN"]), createChildSubCategory)
+  .post(
+    rolesGuard(["OWNER", "ADMIN"]),
+    bodyValidator(childSubCategorySchema),
+    createChildSubCategory
+  )
   .get(getAllChildSubCategories);
 
 router
   .route("/sub/child/:childSubCategoryID")
-  .put(rolesGuard(["OWNER", "ADMIN"]), updateChildSubCategory)
+  .put(
+    rolesGuard(["OWNER", "ADMIN"]),
+    bodyValidator(updateChildSubCategorySchema),
+    updateChildSubCategory
+  )
   .delete(rolesGuard(["OWNER", "ADMIN"]), removeChildSubCategory);
 
 module.exports = router;

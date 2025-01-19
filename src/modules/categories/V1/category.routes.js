@@ -21,7 +21,13 @@ const {
   updateMainCategory,
   removeMainCategory,
   createSubCategory,
+  getAllSubCategories,
+  updateSubCategory,
+  removeSubCategory,
   createChildSubCategory,
+  getAllChildSubCategories,
+  updateChildSubCategory,
+  removeChildSubCategory,
 } = require("./category.controller");
 
 //* Main Categories Routes
@@ -46,12 +52,25 @@ router
 
 //* Sub Categories Routes
 
-router.route("/sub").post(rolesGuard(["OWNER", "ADMIN"]), createSubCategory);
+router
+  .route("/sub")
+  .post(rolesGuard(["OWNER", "ADMIN"]), createSubCategory)
+  .get(getAllSubCategories);
+router
+  .route("/sub/:subCategoryID")
+  .put(rolesGuard(["OWNER", "ADMIN"]), updateSubCategory)
+  .delete(rolesGuard(["OWNER", "ADMIN"]), removeSubCategory);
 
 //* Child Sub Categories Routes
 
 router
   .route("/sub/child")
-  .post(rolesGuard(["OWNER", "ADMIN"]), createChildSubCategory);
+  .post(rolesGuard(["OWNER", "ADMIN"]), createChildSubCategory)
+  .get(getAllChildSubCategories);
+
+router
+  .route("/sub/child/:childSubCategoryID")
+  .put(rolesGuard(["OWNER", "ADMIN"]), updateChildSubCategory)
+  .delete(rolesGuard(["OWNER", "ADMIN"]), removeChildSubCategory);
 
 module.exports = router;

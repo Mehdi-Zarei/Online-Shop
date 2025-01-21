@@ -26,7 +26,15 @@ exports.multerStorage = (destination, maxSize, allowedTypes = []) => {
       if (allowedTypes.length > 0 && allowedTypes.includes(ext)) {
         cb(null, true);
       } else {
-        cb(new Error("File type is not allowed"), false);
+        cb(
+          new Error(
+            "Invalid file type. Please upload files in the correct format." +
+              "For images: Only .jpg, .jpeg, .png, and .svg formats are allowed." +
+              "For videos: Only .mp4, .mov, and .avi formats are allowed." +
+              "For documents: Only .pdf, .docx, and .txt formats are allowed."
+          ),
+          false
+        );
       }
     };
 

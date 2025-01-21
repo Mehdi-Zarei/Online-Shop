@@ -14,7 +14,8 @@ const {
 exports.createMainCategory = async (req, res, next) => {
   try {
     let { title, slug, description, filters } = req.body;
-    filters = JSON.parse(filters);
+
+    if (filters) filters = JSON.parse(filters);
 
     const isCategoryExist = await categoryModel.findOne({ title, slug });
 
@@ -74,12 +75,14 @@ exports.updateMainCategory = async (req, res, next) => {
   try {
     const { categoryID } = req.params;
 
-    let { title, slug, parent, description, filters } = req.body;
-    filters = JSON.parse(filters);
+    let { title, slug, description, filters } = req.body;
+
+    if (filters) filters = JSON.parse(filters);
 
     if (!isValidObjectId(categoryID)) {
       return errorResponse(res, 409, "Category ID Not Valid !!");
     }
+
     let icon = null;
 
     if (req.file) {
@@ -92,7 +95,6 @@ exports.updateMainCategory = async (req, res, next) => {
     const updateCategory = await categoryModel.findByIdAndUpdate(categoryID, {
       title,
       slug,
-      parent,
       description,
       filters,
       icon,
@@ -170,6 +172,10 @@ exports.createSubCategory = async (req, res, next) => {
   try {
     const { title, slug, parent, description, filters } = req.body;
 
+    if (!isValidObjectId(parent)) {
+      return errorResponse(res, 409, "Parent ID Not Valid !!");
+    }
+
     const isSubCategoryExist = await subCategoryModel.findOne({ title, slug });
 
     if (isSubCategoryExist) {
@@ -234,6 +240,20 @@ exports.updateSubCategory = async (req, res, next) => {
       return errorResponse(res, 409, "Sub Category ID Not Valid !!");
     }
 
+    if (!isValidObjectId(parent)) {
+      return errorResponse(res, 409, "Parent ID Not Valid !!");
+    }
+
+    const isParentExist = await categoryModel.findById(parent);
+
+    if (!isParentExist) {
+      return errorResponse(
+        res,
+        404,
+        "Parent Not Exist For This Sub Category !!"
+      );
+    }
+
     const subCategory = await subCategoryModel.findByIdAndUpdate(
       subCategoryID,
       { title, slug, parent, description, filters },
@@ -287,6 +307,10 @@ exports.removeSubCategory = async (req, res, next) => {
 exports.createChildSubCategory = async (req, res, next) => {
   try {
     const { title, slug, parent, description, filters } = req.body;
+
+    if (!isValidObjectId(parent)) {
+      return errorResponse(res, 409, "Parent ID Not Valid !!");
+    }
 
     const isChildSubCategoryExist = await childSubCategoryModel.findOne({
       title,
@@ -347,11 +371,25 @@ exports.updateChildSubCategory = async (req, res, next) => {
   try {
     const { childSubCategoryID } = req.params;
 
+    const { title, slug, parent, description, filters } = req.body;
+
     if (!isValidObjectId(childSubCategoryID)) {
       return errorResponse(res, 409, "Child Sub Category ID Not Valid !!");
     }
 
-    const { title, slug, parent, description, filters } = req.body;
+    if (!isValidObjectId(parent)) {
+      return errorResponse(res, 409, "Parent ID Not Valid !!");
+    }
+
+    const isParentExist = await subCategoryModel.findById(parent);
+
+    if (!isParentExist) {
+      return errorResponse(
+        res,
+        404,
+        "Parent Not Exist For This Child Sub Category!!"
+      );
+    }
 
     const update = await childSubCategoryModel.findByIdAndUpdate(
       childSubCategoryID,

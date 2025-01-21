@@ -11,9 +11,11 @@ const usersRoutes = require("./modules/users/V1/users.routes");
 const locationRoutes = require("./modules/provinces & cities/V1/location.Routes");
 const sellerRouter = require("./modules/seller/V1/seller.routes");
 const categoryRouter = require("./modules/categories/V1/category.routes");
+const productsRouter = require("./modules/product/product.routes");
 
 const { errorHandler } = require("./middlewares/errorHandler");
 
+//* Passport Path Files
 const passport = require("passport");
 const passportLocal = require("./strategies/passport-local");
 const passportGoogle = require("./strategies/passport-google");
@@ -44,6 +46,7 @@ app.use("/api/v1/users", usersRoutes);
 app.use("/api/v1/seller", sellerRouter);
 app.use("/api/v1/location", locationRoutes);
 app.use("/api/v1/categories", categoryRouter);
+app.use("/api/v1/products", productsRouter);
 
 //* 404 Error Handler
 

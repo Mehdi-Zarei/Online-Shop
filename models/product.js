@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const sellerSchema = new mongoose.Schema(
   {
-    seller: {
+    sellerID: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Seller",
       required: true,
@@ -65,16 +65,6 @@ const productSchema = new mongoose.Schema(
     filterValues: {
       type: Map,
       of: mongoose.Types.Mixed,
-      required: true,
-    },
-
-    price: {
-      type: Number,
-      required: true,
-    },
-
-    stock: {
-      type: Number,
       required: true,
     },
 

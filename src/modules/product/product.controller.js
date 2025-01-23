@@ -3,10 +3,16 @@ const { nanoid } = require("nanoid");
 const slugify = require("slugify");
 const fs = require("fs");
 
+//* Models
 const productModel = require("../../../models/product");
 const childSubCategoryModel = require("../../../models/child-subCategory");
+const sellerModel = require("../../../models/seller");
+const usersModel = require("../../../models/users");
+
+//* Validator Schema
 const { createProductSchema } = require("./product.validator");
 
+//* Helper Functions
 const {
   errorResponse,
   successResponse,
@@ -20,28 +26,39 @@ exports.create = async (req, res, next) => {
       childSubCategory,
       filterValues,
       customFilters,
-      price,
       slug,
-      stock,
+      sellers,
     } = req.body;
 
     if (filterValues) filterValues = JSON.parse(filterValues);
     if (customFilters) customFilters = JSON.parse(customFilters);
+    if (sellers) sellers = JSON.parse(sellers);
+
+    const mainSeller = await sellerModel.findOne({
+      userID: sellers[0].sellerID,
+    });
+
+    const mainUser = await usersModel.findById(sellers[0].sellerID);
+
+    if (!mainSeller && !mainUser.roles.includes("OWNER")) {
+      return errorResponse(res, 404, "Seller not found !!");
+    }
+
+    if (mainSeller?.isActive === false) {
+      return errorResponse(res, 403, "This Seller Shop Not Active !!");
+    }
+
+    if (mainUser?.isRestrict) {
+      return errorResponse(res, 403, "This Seller Already Is Banned !! ");
+    }
 
     let images = req.files.map(
       (file) => `public/images/products/${file.filename}`
     );
 
-    try {
-      await createProductSchema.validate(req.body, { abortEarly: false });
-    } catch (error) {
-      await Promise.all(
-        images.map((filePath) => {
-          fs.unlinkSync(filePath);
-        })
-      );
-      next(error);
-    }
+    await createProductSchema.validate(req.body, {
+      abortEarly: false,
+    });
 
     if (!isValidObjectId(childSubCategory)) {
       return errorResponse(res, 409, "Child Sub Category ID Not Valid !!");
@@ -90,8 +107,7 @@ exports.create = async (req, res, next) => {
       slug,
       images,
       shortIdentifier,
-      price,
-      stock,
+      sellers,
     });
 
     return successResponse(
@@ -101,6 +117,16 @@ exports.create = async (req, res, next) => {
       newProducts
     );
   } catch (error) {
+    let images = req.files.map(
+      (file) => `public/images/products/${file.filename}`
+    );
+
+    await Promise.all(
+      images.map((filePath) => {
+        fs.unlinkSync(filePath);
+      })
+    );
+
     next(error);
   }
 };

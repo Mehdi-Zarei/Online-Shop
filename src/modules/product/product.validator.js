@@ -1,3 +1,4 @@
+const { isValidObjectId } = require("mongoose");
 const yup = require("yup");
 
 const createProductSchema = yup.object({
@@ -5,7 +6,14 @@ const createProductSchema = yup.object({
 
   description: yup.string().required("Description is required"),
 
-  childSubCategory: yup.string().required("Child SubCategory is required"),
+  childSubCategory: yup
+    .string()
+    .required("Child SubCategory is required")
+    .test(
+      "is-valid-objectid",
+      "Category ID must be a valid ObjectId",
+      isValidObjectId
+    ),
   filterValues: yup
     .mixed()
     .required("Filter Values are required")
@@ -22,6 +30,42 @@ const createProductSchema = yup.object({
     .test("is-object", "filterValues must be an object", (value) => {
       return value && typeof value === "object" && !Array.isArray(value);
     }),
+
+  sellers: yup
+    .array()
+    .transform((value, originalValue) => {
+      try {
+        return JSON.parse(originalValue);
+      } catch (err) {
+        return null;
+      }
+    })
+    .test("is-array", "Input must be a valid JSON array", (value) =>
+      Array.isArray(value)
+    )
+    .of(
+      yup.object().shape({
+        sellerID: yup
+          .string()
+          .required("Seller ID is required")
+          .test(
+            "is-valid-objectid",
+            "Seller ID must be a valid ObjectId",
+            isValidObjectId
+          ),
+        price: yup
+          .number()
+          .positive("Price must be a positive number")
+          .required("Price is required"),
+        stock: yup
+          .number()
+          .integer("Stock must be an integer")
+          .min(0, "Stock cannot be negative")
+          .required("Stock is required"),
+      })
+    )
+    .required("Input is required")
+    .min(1, "Array must contain at least one item"),
 
   customFilters: yup
     .mixed()
@@ -49,18 +93,7 @@ const createProductSchema = yup.object({
       /^[a-zA-Z0-9 ]+$/,
       "Slug can only contain English letters, numbers, and spaces"
     )
-    .max(50, "Slug must not exceed 50 characters"), // محدودیت تعداد کاراکتر
-
-  price: yup
-    .number()
-    .required("Price is required")
-    .positive("Price must be a positive number"),
-
-  stock: yup
-    .number()
-    .required("Stock is required")
-    .integer("Stock must be an integer")
-    .min(1, "Stock cannot be less than 1"),
+    .max(50, "Slug must not exceed 50 characters"),
 });
 
 const updateProductInfoSchema = yup.object({

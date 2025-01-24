@@ -1,5 +1,7 @@
 const { isValidObjectId } = require("mongoose");
 const userModel = require("../../../../models/users");
+const sellerModel = require("../../../../models/seller");
+
 const {
   errorResponse,
   successResponse,
@@ -43,6 +45,13 @@ exports.restrictUser = async (req, res, next) => {
     await userModel
       .findByIdAndUpdate(userID, { isRestrict: true }, { new: true })
       .select("-password");
+
+    await sellerModel.findOneAndUpdate(
+      { userID: mainUser._id },
+      {
+        isActive: false,
+      }
+    );
 
     return successResponse(res, 200, "User Restricted Successfully.", mainUser);
   } catch (error) {

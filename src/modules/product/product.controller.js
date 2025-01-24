@@ -34,22 +34,14 @@ exports.create = async (req, res, next) => {
     if (customFilters) customFilters = JSON.parse(customFilters);
     if (sellers) sellers = JSON.parse(sellers);
 
-    const mainSeller = await sellerModel.findOne({
-      userID: sellers[0].sellerID,
-    });
+    const mainSeller = await sellerModel.findById(sellers[0].sellerID);
 
-    const mainUser = await usersModel.findById(sellers[0].sellerID);
-
-    if (!mainSeller && !mainUser.roles.includes("OWNER")) {
+    if (!mainSeller) {
       return errorResponse(res, 404, "Seller not found !!");
     }
 
     if (mainSeller?.isActive === false) {
       return errorResponse(res, 403, "This Seller Shop Not Active !!");
-    }
-
-    if (mainUser?.isRestrict) {
-      return errorResponse(res, 403, "This Seller Already Is Banned !! ");
     }
 
     let images = req.files.map(
@@ -127,6 +119,52 @@ exports.create = async (req, res, next) => {
       })
     );
 
+    next(error);
+  }
+};
+
+exports.getAllProducts = async (req, res, next) => {
+  try {
+    //todo: with pagination
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getMainProduct = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "Product ID Not Valid !!");
+    }
+
+    const product = await productModel
+      .findById(id)
+      .populate("childSubCategory", "title description")
+      .populate("sellers.sellerID")
+      .lean();
+
+    if (!product) {
+      return errorResponse(res, 404, "Product Not Found !!");
+    }
+
+    return successResponse(res, 200, product);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.updateProductInfo = async (req, res, next) => {
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.deleteProduct = async (req, res, next) => {
+  try {
+  } catch (error) {
     next(error);
   }
 };

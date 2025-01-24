@@ -7,7 +7,6 @@ const fs = require("fs");
 const productModel = require("../../../models/product");
 const childSubCategoryModel = require("../../../models/child-subCategory");
 const sellerModel = require("../../../models/seller");
-const usersModel = require("../../../models/users");
 
 //* Validator Schema
 const {
@@ -45,6 +44,12 @@ exports.create = async (req, res, next) => {
 
     if (mainSeller?.isActive === false) {
       return errorResponse(res, 403, "This Seller Shop Not Active !!");
+    }
+
+    const isProductAlreadyExist = !!(await productModel.findOne({ name }));
+
+    if (isProductAlreadyExist) {
+      return errorResponse(res, 409, "Product Already Exist !!");
     }
 
     let images = req.files.map(

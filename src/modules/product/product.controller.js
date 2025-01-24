@@ -7,6 +7,7 @@ const fs = require("fs");
 const productModel = require("../../../models/product");
 const childSubCategoryModel = require("../../../models/child-subCategory");
 const sellerModel = require("../../../models/seller");
+const noteModel = require("../../../models/note");
 
 //* Validator Schema
 const {
@@ -256,11 +257,21 @@ exports.deleteProduct = async (req, res, next) => {
 
     const remove = await productModel.findByIdAndDelete(id);
 
-    remove?.images?.map((img) => fs.unlink(img, (error) => next(error)));
+    remove?.images?.forEach((img) => {
+      if (fs.existsSync(img)) {
+        fs.unlink(img, (err) => {
+          if (err) {
+            return next(err);
+          }
+        });
+      }
+    });
 
     if (!remove) {
       return errorResponse(res, 404, "Product Not Found !!");
     }
+
+    await noteModel.deleteMany({ product: id });
 
     //todo : remove comments and ...
 

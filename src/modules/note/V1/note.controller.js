@@ -50,6 +50,22 @@ exports.create = async (req, res, next) => {
 
 exports.getAll = async (req, res, next) => {
   try {
+    const userID = req.user._id;
+
+    const notes = await noteModel
+      .find({ user: userID }, "-user -__v")
+      .populate("product", "name description images")
+      .lean();
+
+    if (!notes) {
+      return errorResponse(
+        res,
+        404,
+        "You Don't Have Any Notes Yet Or Your Note's Removed After Product Deleted !!"
+      );
+    }
+
+    return successResponse(res, 200, notes);
   } catch (error) {
     next(error);
   }

@@ -64,6 +64,23 @@ exports.updateContent = async (req, res, next) => {
 
 exports.remove = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
+    const user = req.user;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "Note ID Not Valid !!");
+    }
+
+    const remove = await noteModel.findOneAndDelete({
+      $and: [{ _id: id, user: user._id }],
+    });
+
+    if (!remove) {
+      return errorResponse(res, 404, "Note Not Found !!");
+    }
+
+    return successResponse(res, 200, "Note Removed Successfully.");
   } catch (error) {
     next(error);
   }

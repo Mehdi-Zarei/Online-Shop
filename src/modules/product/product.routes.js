@@ -35,7 +35,11 @@ router
 router
   .route("/:id")
   .get(getMainProduct)
-  .put(rolesGuard(["OWNER", "ADMIN"]), updateProductInfo)
+  .put(
+    rolesGuard(["OWNER", "ADMIN"]),
+    upload.array("images", 10),
+    updateProductInfo
+  )
   .delete(rolesGuard(["OWNER", "ADMIN"]), deleteProduct);
 
 module.exports = router;

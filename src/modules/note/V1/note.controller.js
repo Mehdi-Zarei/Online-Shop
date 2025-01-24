@@ -101,6 +101,29 @@ exports.getOne = async (req, res, next) => {
 
 exports.updateContent = async (req, res, next) => {
   try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const userID = req.user._id;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "Not ID Not Valid !!");
+    }
+
+    const update = await noteModel.findOneAndUpdate(
+      { $and: [{ _id: id, user: userID }] },
+      { content },
+      { new: true }
+    );
+
+    if (!update) {
+      return errorResponse(
+        res,
+        404,
+        "Note Not Found Or Your Notes Removed After Product Deleted !!"
+      );
+    }
+
+    return successResponse(res, 200, { updatedNote: update });
   } catch (error) {
     next(error);
   }

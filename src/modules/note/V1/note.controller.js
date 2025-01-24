@@ -55,6 +55,34 @@ exports.getAll = async (req, res, next) => {
   }
 };
 
+exports.getOne = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const userID = req.user._id;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "Note ID Not Valid !!");
+    }
+
+    const mainNote = await noteModel
+      .findOne({
+        $and: [{ _id: id, user: userID }],
+      })
+      .populate("product", "name description images")
+      .select("-user -__v")
+      .lean();
+
+    if (!mainNote) {
+      return errorResponse(res, 404, "Note Not Found With This ID !!");
+    }
+
+    return successResponse(res, 200, { note: mainNote });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.updateContent = async (req, res, next) => {
   try {
   } catch (error) {

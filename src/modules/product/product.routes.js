@@ -17,12 +17,25 @@ const upload = multerStorage("public/images/products", 5, [
 ]);
 
 //* Controller
-const { create } = require("./product.controller");
+const {
+  create,
+  getAllProducts,
+  getMainProduct,
+  updateProductInfo,
+  deleteProduct,
+} = require("./product.controller");
 
 //* Routes
 
 router
   .route("/")
-  .post(rolesGuard(["OWNER", "ADMIN"]), upload.array("images", 10), create);
+  .post(rolesGuard(["OWNER", "ADMIN"]), upload.array("images", 10), create)
+  .get(getAllProducts);
+
+router
+  .route("/:id")
+  .get(getMainProduct)
+  .put(rolesGuard(["OWNER", "ADMIN"]), updateProductInfo)
+  .delete(rolesGuard(["OWNER", "ADMIN"]), deleteProduct);
 
 module.exports = router;

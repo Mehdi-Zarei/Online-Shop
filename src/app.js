@@ -12,7 +12,7 @@ const locationRoutes = require("./modules/provinces & cities/V1/location.Routes"
 const sellerRouter = require("./modules/seller/V1/seller.routes");
 const categoryRouter = require("./modules/categories/V1/category.routes");
 const productsRouter = require("./modules/product/product.routes");
-const notesRouter = require("./modules/note.routes");
+const notesRouter = require("./modules/note/V1/note.routes");
 
 const { errorHandler } = require("./middlewares/errorHandler");
 

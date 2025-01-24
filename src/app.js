@@ -12,6 +12,7 @@ const locationRoutes = require("./modules/provinces & cities/V1/location.Routes"
 const sellerRouter = require("./modules/seller/V1/seller.routes");
 const categoryRouter = require("./modules/categories/V1/category.routes");
 const productsRouter = require("./modules/product/product.routes");
+const notesRouter = require("./modules/note.routes");
 
 const { errorHandler } = require("./middlewares/errorHandler");
 
@@ -47,6 +48,7 @@ app.use("/api/v1/seller", sellerRouter);
 app.use("/api/v1/location", locationRoutes);
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/products", productsRouter);
+app.use("/api/v1/notes", notesRouter);
 
 //* 404 Error Handler
 

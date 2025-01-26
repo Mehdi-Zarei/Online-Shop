@@ -21,6 +21,8 @@ const {
   successResponse,
 } = require("../../helpers/responseMessage");
 
+const { createPagination } = require("../../helpers/pagination");
+
 exports.create = async (req, res, next) => {
   try {
     let {
@@ -134,7 +136,30 @@ exports.create = async (req, res, next) => {
 
 exports.getAllProducts = async (req, res, next) => {
   try {
-    //todo: with pagination
+    const { page = 1, limit = 10 } = req.query;
+
+    const products = await productModel
+      .find({})
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("childSubCategory", "title description")
+      .populate("sellers.sellerID")
+      .lean();
+
+    if (!products) {
+      return errorResponse(res, 404, "You Don't Have Any Product Yet !!");
+    }
+
+    const totalProductsCount = await productModel.countDocuments();
+
+    const pagination = createPagination(
+      page,
+      limit,
+      totalProductsCount,
+      "Products"
+    );
+
+    return successResponse(res, 200, { products, pagination });
   } catch (error) {
     next(error);
   }

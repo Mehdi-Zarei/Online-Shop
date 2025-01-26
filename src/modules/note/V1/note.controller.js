@@ -3,6 +3,8 @@ const productModel = require("../../../../models/product");
 
 const { isValidObjectId } = require("mongoose");
 
+const { createPagination } = require("../../../helpers/pagination");
+
 const {
   errorResponse,
   successResponse,
@@ -50,12 +52,16 @@ exports.create = async (req, res, next) => {
 
 exports.getAll = async (req, res, next) => {
   try {
+    const { page = 1, limit = 10 } = req.query;
+
     const userID = req.user._id;
 
     const notes = await noteModel
       .find({ user: userID }, "-user -__v")
       .populate("product", "name description images")
-      .lean();
+      .lean()
+      .skip((page - 1) * limit)
+      .limit(limit);
 
     if (!notes) {
       return errorResponse(
@@ -65,7 +71,11 @@ exports.getAll = async (req, res, next) => {
       );
     }
 
-    return successResponse(res, 200, notes);
+    const totalNoteCount = await noteModel.countDocuments({ user: userID });
+
+    const pagination = createPagination(page, limit, totalNoteCount, "Note's");
+
+    return successResponse(res, 200, { notes, pagination });
   } catch (error) {
     next(error);
   }

@@ -13,6 +13,9 @@ const sellerRouter = require("./modules/seller/V1/seller.routes");
 const categoryRouter = require("./modules/categories/V1/category.routes");
 const productsRouter = require("./modules/product/product.routes");
 const notesRouter = require("./modules/note/V1/note.routes");
+const {
+  redirectToProductPage,
+} = require("./modules/shortLink/V1/shortLink.controller");
 
 const { errorHandler } = require("./middlewares/errorHandler");
 
@@ -49,6 +52,7 @@ app.use("/api/v1/location", locationRoutes);
 app.use("/api/v1/categories", categoryRouter);
 app.use("/api/v1/products", productsRouter);
 app.use("/api/v1/notes", notesRouter);
+app.get("/api/v1/p/:shortIdentifier", redirectToProductPage);
 
 //* 404 Error Handler
 

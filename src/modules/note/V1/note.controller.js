@@ -59,6 +59,7 @@ exports.getAll = async (req, res, next) => {
     const notes = await noteModel
       .find({ user: userID }, "-user -__v")
       .populate("product", "name description images")
+      .sort({ createdAt: -1 })
       .lean()
       .skip((page - 1) * limit)
       .limit(limit);

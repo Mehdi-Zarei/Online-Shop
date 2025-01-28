@@ -142,6 +142,7 @@ exports.getAllProducts = async (req, res, next) => {
       .find({})
       .skip((page - 1) * limit)
       .limit(limit)
+      .sort({ createdAt: -1 })
       .populate("childSubCategory", "title description")
       .populate("sellers.sellerID")
       .lean();

@@ -191,7 +191,6 @@ exports.getMainProduct = async (req, res, next) => {
 
 exports.updateProductInfo = async (req, res, next) => {
   try {
-    //todo
     const { id } = req.params;
 
     let {
@@ -201,72 +200,86 @@ exports.updateProductInfo = async (req, res, next) => {
       filterValues,
       customFilters,
       slug,
-      sellers,
+      deleteOldImages,
     } = req.body;
 
     if (filterValues) filterValues = JSON.parse(filterValues);
     if (customFilters) customFilters = JSON.parse(customFilters);
-    if (sellers) sellers = JSON.parse(sellers);
 
     if (!isValidObjectId(id)) {
       return errorResponse(res, 409, "Product ID Not Valid !!");
     }
 
-    let images = req.files.map(
-      (file) => `public/images/products/${file.filename}`
-    );
+    const mainProduct = await productModel.findById(id);
+
+    if (!mainProduct) {
+      return errorResponse(res, 404, "Product Not Found !!");
+    }
+
+    if (name) mainProduct.name = name;
+
+    if (description) mainProduct.description = description;
+
+    if (filterValues) mainProduct.filterValues = filterValues;
+
+    if (customFilters) mainProduct.customFilters = customFilters;
+
+    if (childSubCategory) {
+      if (!isValidObjectId(childSubCategory)) {
+        return errorResponse(res, 409, "Child Sub Category ID Not Valid !!");
+      }
+
+      const isCategoryExist = !!(await childSubCategoryModel.findById(
+        childSubCategory
+      ));
+
+      if (!isCategoryExist) {
+        return errorResponse(res, 404, "Child Sub Category Not Exist !!");
+      }
+
+      mainProduct.childSubCategory = childSubCategory;
+    }
+
+    if (slug) {
+      slug = slugify(slug, { lower: true, strict: true });
+
+      const isTheSlugRepetitive = !!(await productModel.findOne({ slug }));
+
+      if (isTheSlugRepetitive) {
+        slug = slug + "-" + Date.now().toString().slice(-4);
+      }
+
+      mainProduct.slug = slug;
+    }
 
     await updateProductInfoSchema.validate(req.body, {
       abortEarly: false,
     });
 
-    // if (!isValidObjectId(childSubCategory)) {
-    //   return errorResponse(res, 409, "Child Sub Category ID Not Valid !!");
-    // }
+    if (req.files) {
+      const newImages = req.files.map(
+        (file) => `public/images/products/${file.filename}`
+      );
 
-    const isCategoryExist = !!(await childSubCategoryModel.findById(
-      childSubCategory
-    ));
-
-    if (!isCategoryExist) {
-      return errorResponse(res, 404, "Category Not Exist !!");
+      if (deleteOldImages === "true") {
+        mainProduct.images?.forEach((img) => {
+          if (fs.existsSync(img)) {
+            fs.unlink(img, (err) => {
+              if (err) {
+                return next(err);
+              }
+            });
+          }
+        });
+        mainProduct.images = newImages;
+      } else {
+        mainProduct.images = [...mainProduct.images, ...newImages];
+      }
     }
 
-    slug = slugify(slug, { lower: true, strict: true });
+    const updateProduct = await mainProduct.save();
 
-    const isTheSlugRepetitive = !!(await productModel.findOne({ slug }));
-
-    if (isTheSlugRepetitive) {
-      slug = slug + "-" + Date.now().toString().slice(-4);
-    }
-
-    let shortIdentifier = nanoid(6);
-
-    const isShortIdentifierRepetitive = !!(await productModel.findOne({
-      shortIdentifier,
-    }));
-
-    if (isShortIdentifierRepetitive) {
-      shortIdentifier = shortIdentifier + "-" + Date.now().toString().slice(-2);
-    }
-
-    const updateProduct = await productModel.findByIdAndUpdate(
-      id,
-      {
-        name,
-        description,
-        childSubCategory,
-        filterValues,
-        customFilters,
-        slug,
-        images,
-        shortIdentifier,
-        sellers,
-      },
-      { new: true }
-    );
-
-    return successResponse(res, 200, updateProduct);
+    return successResponse(res, 200, { product: updateProduct });
   } catch (error) {
     next(error);
   }

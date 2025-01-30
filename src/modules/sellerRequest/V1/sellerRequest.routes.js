@@ -5,30 +5,39 @@ const passport = require("passport");
 //* Middleware
 const rolesGuard = require("../../../middlewares/rolesGuard");
 
+//Todo: Validator
+
 //* Controller
 const {
-  getAllSellerRequests,
-  createSellerRequests,
-  getOneSellerRequests,
-  updateSellerRequestsStatus,
-  deleteSellerRequests,
+  adminFetchAllRequests,
+  getSellerRequests,
+  createSellerRequest,
+  getOneSellerRequest,
+  updateSellerRequestStatus,
+  deleteSellerRequest,
 } = require("./sellerRequest.controller");
 
 //* Routes
 
-//todo : Owner can see all sellers requests
+router
+  .route("/all")
+  .get(
+    passport.authenticate("accessToken", { session: false }),
+    rolesGuard(["OWNER", "ADMIN"]),
+    adminFetchAllRequests
+  );
 
 router
   .route("/")
   .get(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["SELLER"]),
-    getAllSellerRequests
+    getSellerRequests
   )
   .post(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["SELLER"]),
-    createSellerRequests
+    createSellerRequest
   );
 
 router
@@ -36,17 +45,17 @@ router
   .get(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["SELLER"]),
-    getOneSellerRequests
+    getOneSellerRequest
   )
   .patch(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["OWNER", "ADMIN"]),
-    updateSellerRequestsStatus
+    updateSellerRequestStatus
   )
   .delete(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["SELLER"]),
-    deleteSellerRequests
+    deleteSellerRequest
   );
 
 module.exports = router;

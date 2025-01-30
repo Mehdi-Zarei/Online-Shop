@@ -153,6 +153,21 @@ exports.updateSellerRequestsStatus = async (req, res, next) => {
 
 exports.deleteSellerRequests = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "Request ID Not Valid !!");
+    }
+
+    const deleteRequest = await sellerRequestModel.findByIdAndDelete(id, {
+      new: true,
+    });
+
+    if (!deleteRequest) {
+      return errorResponse(res, 404, "Request Not Found With This ID !!");
+    }
+
+    return successResponse(res, 200, "Request Removed Successfully.");
   } catch (error) {
     next(error);
   }

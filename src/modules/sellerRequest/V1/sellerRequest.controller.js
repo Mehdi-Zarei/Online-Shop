@@ -19,7 +19,7 @@ exports.getAllSellerRequests = async (req, res, next) => {
     const seller = await sellerModel.findOne({ userID: req.user._id });
 
     if (!seller) {
-      return errorResponse(res, 404, "You don't a seller !!");
+      return errorResponse(res, 404, "You don't any request !!");
     }
 
     const mainSellerRequests = await sellerRequestModel
@@ -106,6 +106,22 @@ exports.createSellerRequests = async (req, res, next) => {
 
 exports.getOneSellerRequests = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "Request ID Not Valid !!");
+    }
+
+    const sellerRequest = await sellerRequestModel
+      .findOne({ _id: id }, "-__v -seller")
+      .populate("product", "name description images")
+      .lean();
+
+    if (!sellerRequest) {
+      return errorResponse(res, 404, "Request Not Found With This ID !!");
+    }
+
+    return successResponse(res, 200, sellerRequest);
   } catch (error) {
     next(error);
   }

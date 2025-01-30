@@ -113,12 +113,26 @@ exports.getOneSellerRequests = async (req, res, next) => {
     }
 
     const sellerRequest = await sellerRequestModel
-      .findOne({ _id: id }, "-__v -seller")
+      .findOne({ _id: id }, "-__v")
       .populate("product", "name description images")
       .lean();
 
     if (!sellerRequest) {
       return errorResponse(res, 404, "Request Not Found With This ID !!");
+    }
+
+    const sellerID = await sellerModel.findOne({ _id: sellerRequest.seller });
+
+    if (!sellerID) {
+      return errorResponse(res, 404, "Seller Not Found !!");
+    }
+
+    if (sellerID.userID.toString() !== req.user._id.toString()) {
+      return errorResponse(
+        res,
+        403,
+        "You Don't Have Access To This Request !!"
+      );
     }
 
     return successResponse(res, 200, sellerRequest);

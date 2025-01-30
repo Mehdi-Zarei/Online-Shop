@@ -155,17 +155,33 @@ exports.deleteSellerRequests = async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    const userID = req.user._id;
+
     if (!isValidObjectId(id)) {
       return errorResponse(res, 409, "Request ID Not Valid !!");
     }
 
-    const deleteRequest = await sellerRequestModel.findByIdAndDelete(id, {
-      new: true,
-    });
+    const mainRequest = await sellerRequestModel.findById(id);
 
-    if (!deleteRequest) {
+    if (!mainRequest) {
       return errorResponse(res, 404, "Request Not Found With This ID !!");
     }
+
+    const seller = await sellerModel.findOne({ _id: mainRequest?.seller });
+
+    if (!seller) {
+      return errorResponse(res, 404, "Seller Not Found !!");
+    }
+
+    if (seller?.userID.toString() !== userID.toString()) {
+      return errorResponse(
+        res,
+        403,
+        "You Don't Have Access To This Request !!"
+      );
+    }
+
+    await mainRequest.deleteOne({ id });
 
     return successResponse(res, 200, "Request Removed Successfully.");
   } catch (error) {

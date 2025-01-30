@@ -4,8 +4,13 @@ const passport = require("passport");
 
 //* Middleware
 const rolesGuard = require("../../../middlewares/rolesGuard");
+const { bodyValidator } = require("../../../middlewares/validator");
 
-//Todo: Validator
+//* Validator Schema
+const {
+  sellerRequestSchema,
+  updateSellerRequestStatusSchema,
+} = require("./sellerRequest.validator");
 
 //* Controller
 const {
@@ -32,6 +37,7 @@ router
   .get(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["SELLER"]),
+    bodyValidator(sellerRequestSchema),
     getSellerRequests
   )
   .post(
@@ -50,6 +56,7 @@ router
   .patch(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["OWNER", "ADMIN"]),
+    bodyValidator(updateSellerRequestStatusSchema),
     updateSellerRequestStatus
   )
   .delete(

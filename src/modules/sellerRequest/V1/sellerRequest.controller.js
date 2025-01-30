@@ -2,15 +2,49 @@ const sellerRequestModel = require("../../../../models/sellerRequests");
 const sellerModel = require("../../../../models/seller");
 const productModel = require("../../../../models/product");
 
+const { isValidObjectId } = require("mongoose");
+
+const { createPagination } = require("../../../helpers/pagination");
+
 //* Helper Functions
 const {
   errorResponse,
   successResponse,
 } = require("../../../helpers/responseMessage");
-const { isValidObjectId } = require("mongoose");
 
 exports.getAllSellerRequests = async (req, res, next) => {
   try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const seller = await sellerModel.findOne({ userID: req.user._id });
+
+    if (!seller) {
+      return errorResponse(res, 404, "You don't a seller !!");
+    }
+
+    const mainSellerRequests = await sellerRequestModel
+      .find({ seller }, "-seller -__v")
+      .populate("product", "name description images")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(10)
+      .lean();
+
+    if (mainSellerRequests.length === 0) {
+      return errorResponse(res, 404, "You don't have any requests !!");
+    }
+
+    const pagination = createPagination(
+      page,
+      limit,
+      mainSellerRequests.length,
+      "SellerRequests"
+    );
+
+    return successResponse(res, 200, {
+      sellerRequests: mainSellerRequests,
+      pagination,
+    });
   } catch (error) {
     next(error);
   }

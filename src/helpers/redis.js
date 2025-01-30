@@ -10,6 +10,15 @@ const saveOtpInRedis = async (key, otpCode) => {
   }
 };
 
+const removeOtpFromRedis = async (key, otpCode) => {
+  try {
+    const result = await redis.del(`otp:${key}`, otpCode, "EX", 60);
+    return result;
+  } catch (error) {
+    throw error;
+  }
+};
+
 const gettingOtpFromRedis = async (phone) => {
   try {
     const getOTP = await redis.get(`otp:${phone}`);
@@ -118,6 +127,7 @@ const removeRefreshTokenFromRedis = async (key) => {
 
 module.exports = {
   saveOtpInRedis,
+  removeOtpFromRedis,
   gettingOtpInfoFromRedis,
   saveRefreshTokenInRedis,
   gettingOtpFromRedis,

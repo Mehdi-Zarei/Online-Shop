@@ -194,7 +194,8 @@ exports.updateSellerRequestStatus = async (req, res, next) => {
 
       await productModel.updateOne(
         { "sellers.sellerID": mainRequest.seller },
-        { $pull: { sellers: { sellerID: mainRequest.seller } } }
+        { $pull: { sellers: { sellerID: mainRequest.seller } } },
+        { runValidators: true }
       );
     }
 
@@ -211,17 +212,19 @@ exports.updateSellerRequestStatus = async (req, res, next) => {
       mainRequest.adminMessage = adminMessage;
       await mainRequest.save();
 
-      const addSellerToProduct = await productModel.findById(
-        mainRequest.product
+      const addSellerToProduct = await productModel.findByIdAndUpdate(
+        mainRequest.product,
+        {
+          $push: {
+            sellers: {
+              sellerID: mainRequest.seller,
+              price: mainRequest.price,
+              stock: mainRequest.stock,
+            },
+          },
+        },
+        { new: true, runValidators: true }
       );
-
-      addSellerToProduct.sellers.push({
-        sellerID: mainRequest.seller,
-        price: mainRequest.price,
-        stock: mainRequest.stock,
-      });
-
-      await addSellerToProduct.save();
 
       if (!addSellerToProduct) {
         mainRequest.requestStatus = "Rejected";

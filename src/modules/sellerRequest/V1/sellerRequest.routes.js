@@ -5,6 +5,15 @@ const passport = require("passport");
 //* Middleware
 const rolesGuard = require("../../../middlewares/rolesGuard");
 
+//* Controller
+const {
+  getAllSellerRequests,
+  createSellerRequests,
+  getOneSellerRequests,
+  updateSellerRequestsStatus,
+  deleteSellerRequests,
+} = require("./sellerRequest.controller");
+
 //* Routes
 
 //todo : Owner can see all sellers requests

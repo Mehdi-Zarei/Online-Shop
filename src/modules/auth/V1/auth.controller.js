@@ -8,6 +8,7 @@ const uuid = require("uuid").v4;
 const {
   gettingOtpInfoFromRedis,
   saveOtpInRedis,
+  removeOtpFromRedis,
   saveRefreshTokenInRedis,
   gettingOtpFromRedis,
   saveResetPasswordTokenInRedis,
@@ -83,16 +84,23 @@ exports.sent = async (req, res, next) => {
 
     await saveOtpInRedis(phone, generateOtpCode);
 
-    await sentOtp(phone, generateOtpCode);
+    const otpResult = await sentOtp(phone, generateOtpCode);
 
-    return successResponse(
-      res,
-      200,
-      {
-        message: "Otp Code Sent Successfully To Your Phone Number.",
-      },
-      phone
-    );
+    if (otpResult.success) {
+      return successResponse(
+        res,
+        200,
+        { message: "Otp Code Sent Successfully To Your Phone Number." },
+        phone
+      );
+    } else {
+      await removeOtpFromRedis(phone, generateOtpCode);
+      return errorResponse(
+        res,
+        500,
+        "Failed to send OTP code. Please try again later."
+      );
+    }
   } catch (error) {
     next(error);
   }

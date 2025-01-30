@@ -16,14 +16,14 @@ exports.getAllSellerRequests = async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
-    const seller = await sellerModel.findOne({ userID: req.user._id });
+    const sellerShop = await sellerModel.findOne({ userID: req.user._id });
 
-    if (!seller) {
-      return errorResponse(res, 404, "You don't any request !!");
+    if (!sellerShop) {
+      return errorResponse(res, 404, "You don't have any request !!");
     }
 
     const mainSellerRequests = await sellerRequestModel
-      .find({ seller }, "-seller -__v")
+      .find({ seller: sellerShop }, "-seller -__v")
       .populate("product", "name description images")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)

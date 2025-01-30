@@ -35,7 +35,7 @@ router
   .route("/:id")
   .get(
     passport.authenticate("accessToken", { session: false }),
-    rolesGuard(["OWNER", "ADMIN", "SELLER"]),
+    rolesGuard(["SELLER"]),
     getOneSellerRequests
   )
   .patch(
@@ -45,7 +45,7 @@ router
   )
   .delete(
     passport.authenticate("accessToken", { session: false }),
-    rolesGuard(["OWNER", "ADMIN", "SELLER"]),
+    rolesGuard(["SELLER"]),
     deleteSellerRequests
   );
 

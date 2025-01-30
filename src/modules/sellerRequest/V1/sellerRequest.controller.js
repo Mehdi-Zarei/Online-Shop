@@ -12,9 +12,39 @@ const {
   successResponse,
 } = require("../../../helpers/responseMessage");
 
-exports.getAllSellerRequests = async (req, res, next) => {
+exports.adminFetchAllRequests = async (req, res, next) => {
   try {
     const { page = 1, limit = 10 } = req.query;
+
+    const allRequests = await sellerRequestModel
+      .find({})
+      .populate("seller", "storeName isActive")
+      .populate("product", "name description images")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean();
+
+    if (allRequests.length === 0) {
+      return errorResponse(res, 404, "No requests have been filed yet.");
+    }
+
+    const pagination = createPagination(
+      page,
+      limit,
+      allRequests.length,
+      " Seller Requests"
+    );
+
+    return successResponse(res, 200, allRequests, pagination);
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getSellerRequests = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, requestStatus = "Pending" } = req.query;
 
     const sellerShop = await sellerModel.findOne({ userID: req.user._id });
 
@@ -23,7 +53,7 @@ exports.getAllSellerRequests = async (req, res, next) => {
     }
 
     const mainSellerRequests = await sellerRequestModel
-      .find({ seller: sellerShop }, "-seller -__v")
+      .find({ seller: sellerShop, requestStatus }, "-seller -__v")
       .populate("product", "name description images")
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -50,7 +80,7 @@ exports.getAllSellerRequests = async (req, res, next) => {
   }
 };
 
-exports.createSellerRequests = async (req, res, next) => {
+exports.createSellerRequest = async (req, res, next) => {
   try {
     const { product, price, stock } = req.body;
     const sellerID = req.user._id;
@@ -104,7 +134,7 @@ exports.createSellerRequests = async (req, res, next) => {
   }
 };
 
-exports.getOneSellerRequests = async (req, res, next) => {
+exports.getOneSellerRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -141,7 +171,7 @@ exports.getOneSellerRequests = async (req, res, next) => {
   }
 };
 
-exports.updateSellerRequestsStatus = async (req, res, next) => {
+exports.updateSellerRequestStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -151,12 +181,42 @@ exports.updateSellerRequestsStatus = async (req, res, next) => {
       return errorResponse(res, 409, "Request ID Not Valid !!");
     }
 
-    const mainRequest = await sellerRequestModel
-      .findByIdAndUpdate(id, { requestStatus, adminMessage })
-      .lean();
+    const mainRequest = await sellerRequestModel.findById(id);
 
     if (!mainRequest) {
       return errorResponse(res, 404, "Don't Find Any Requests With This ID !!");
+    }
+
+    if (requestStatus === "Rejected") {
+      mainRequest.requestStatus = requestStatus;
+      mainRequest.adminMessage = adminMessage;
+      await mainRequest.save();
+    }
+
+    if (requestStatus === "Accepted") {
+      if (mainRequest.requestStatus === "Accepted") {
+        return errorResponse(
+          res,
+          409,
+          "This seller has already been added to the list of sellers for the desired product."
+        );
+      }
+
+      mainRequest.requestStatus = requestStatus;
+      mainRequest.adminMessage = adminMessage;
+      await mainRequest.save();
+
+      const addSellerToProduct = await productModel.findByIdAndUpdate(
+        mainRequest.product,
+        { $push: { sellers: mainRequest } }
+      );
+
+      if (!addSellerToProduct) {
+        mainRequest.requestStatus = "Rejected";
+        mainRequest.adminMessage = "This Product Not Exist !!";
+        await mainRequest.save();
+        return errorResponse(res, 404, "This Product Not Exist !!");
+      }
     }
 
     return successResponse(res, 200, { requestStatus, adminMessage });
@@ -165,7 +225,7 @@ exports.updateSellerRequestsStatus = async (req, res, next) => {
   }
 };
 
-exports.deleteSellerRequests = async (req, res, next) => {
+exports.deleteSellerRequest = async (req, res, next) => {
   try {
     const { id } = req.params;
 
@@ -193,6 +253,10 @@ exports.deleteSellerRequests = async (req, res, next) => {
         403,
         "You Don't Have Access To This Request !!"
       );
+    }
+
+    if (mainRequest.requestStatus !== "Pending") {
+      return errorResponse(res, 403, "You cannot delete reviewed requests !!");
     }
 
     await mainRequest.deleteOne({ id });

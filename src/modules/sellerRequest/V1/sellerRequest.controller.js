@@ -191,6 +191,11 @@ exports.updateSellerRequestStatus = async (req, res, next) => {
       mainRequest.requestStatus = requestStatus;
       mainRequest.adminMessage = adminMessage;
       await mainRequest.save();
+
+      await productModel.updateOne(
+        { "sellers.sellerID": mainRequest.seller },
+        { $pull: { sellers: { sellerID: mainRequest.seller } } }
+      );
     }
 
     if (requestStatus === "Accepted") {
@@ -206,10 +211,17 @@ exports.updateSellerRequestStatus = async (req, res, next) => {
       mainRequest.adminMessage = adminMessage;
       await mainRequest.save();
 
-      const addSellerToProduct = await productModel.findByIdAndUpdate(
-        mainRequest.product,
-        { $push: { sellers: mainRequest } }
+      const addSellerToProduct = await productModel.findById(
+        mainRequest.product
       );
+
+      addSellerToProduct.sellers.push({
+        sellerID: mainRequest.seller,
+        price: mainRequest.price,
+        stock: mainRequest.stock,
+      });
+
+      await addSellerToProduct.save();
 
       if (!addSellerToProduct) {
         mainRequest.requestStatus = "Rejected";

@@ -129,6 +129,23 @@ exports.getOneSellerRequests = async (req, res, next) => {
 
 exports.updateSellerRequestsStatus = async (req, res, next) => {
   try {
+    const { id } = req.params;
+
+    const { requestStatus, adminMessage } = req.body;
+
+    if (!isValidObjectId(id)) {
+      return errorResponse(res, 409, "Request ID Not Valid !!");
+    }
+
+    const mainRequest = await sellerRequestModel
+      .findByIdAndUpdate(id, { requestStatus, adminMessage })
+      .lean();
+
+    if (!mainRequest) {
+      return errorResponse(res, 404, "Don't Find Any Requests With This ID !!");
+    }
+
+    return successResponse(res, 200, { requestStatus, adminMessage });
   } catch (error) {
     next(error);
   }

@@ -12,9 +12,9 @@ const {
   createComment,
   editComment,
   removeComment,
-  removeReplay,
-  addReplay,
-  editReplay,
+  removeReply,
+  addReply,
+  editReply,
 } = require("./comment.controller");
 
 //* Validator Schema
@@ -42,17 +42,17 @@ router
   );
 
 router
-  .route("/:commentID/replay")
-  .post(passport.authenticate("accessToken", { session: false }), addReplay)
+  .route("/:commentID/reply")
+  .post(passport.authenticate("accessToken", { session: false }), addReply)
   .delete(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["OWNER", "ADMIN"]),
-    removeReplay
+    removeReply
   )
   .patch(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["OWNER", "ADMIN"]),
-    editReplay
+    editReply
   );
 
 module.exports = router;

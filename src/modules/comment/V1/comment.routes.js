@@ -6,8 +6,19 @@ const rolesGuard = require("../../../middlewares/rolesGuard");
 const { bodyValidator } = require("../../../middlewares/validator");
 const passport = require("passport");
 
-//* Validator Schema
+//* Controller
+const {
+  getAllComments,
+  createComment,
+  editComment,
+  removeComment,
+  removeReplay,
+  addReplay,
+  editReplay,
+} = require("./comment.controller");
 
+//* Validator Schema
+// todo : validations
 //* Routes
 
 router

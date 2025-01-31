@@ -43,7 +43,10 @@ router
 
 router
   .route("/:commentID/reply")
-  .post(passport.authenticate("accessToken", { session: false }), addReply)
+  .post(passport.authenticate("accessToken", { session: false }), addReply);
+
+router
+  .route("/:commentID/reply/:replyID")
   .delete(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["OWNER", "ADMIN"]),

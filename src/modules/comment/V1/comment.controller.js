@@ -110,8 +110,29 @@ exports.createComment = async (req, res, next) => {
   }
 };
 
-exports.editComment = async (req, res, next) => {
+exports.setCommentStatus = async (req, res, next) => {
   try {
+    const { commentID } = req.params;
+    const { isAccept } = req.body;
+
+    if (!isValidObjectId(commentID)) {
+      return errorResponse(res, 409, "Comment ID Not Valid !!");
+    }
+
+    const updateCommentStatus = await commentModel.findByIdAndUpdate(
+      commentID,
+      { isAccept }
+    );
+
+    if (!updateCommentStatus) {
+      return errorResponse(res, 404, "Comment Not Found !!");
+    }
+
+    if (isAccept === true) {
+      return successResponse(res, 200, "Comment Accepted Successfully.");
+    } else {
+      return successResponse(res, 200, "Comment Rejected Successfully.");
+    }
   } catch (error) {
     next(error);
   }
@@ -217,8 +238,35 @@ exports.removeReply = async (req, res, next) => {
   }
 };
 
-exports.editReply = async (req, res, next) => {
+exports.setReplyCommentStatus = async (req, res, next) => {
   try {
+    const { commentID, replyID } = req.params;
+    const { isAccept } = req.body;
+
+    if (!isValidObjectId(commentID) || !isValidObjectId(replyID)) {
+      return errorResponse(res, 409, "Comment Or Reply ID Not Valid !!");
+    }
+
+    const mainComment = await commentModel.findById(commentID);
+
+    if (!mainComment) {
+      return errorResponse(res, 404, "Comment Not Found !!");
+    }
+
+    const mainReply = mainComment.replies.id(replyID);
+
+    if (!mainReply) {
+      return errorResponse(res, 404, "Reply Comment Not Found !!");
+    }
+
+    mainReply.isAccept = isAccept;
+    await mainComment.save();
+
+    if (isAccept === true) {
+      return successResponse(res, 200, "Reply Comment Accepted Successfully.");
+    } else {
+      return successResponse(res, 200, "Reply Comment Rejected Successfully.");
+    }
   } catch (error) {
     next(error);
   }

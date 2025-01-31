@@ -10,11 +10,11 @@ const passport = require("passport");
 const {
   getAllComments,
   createComment,
-  editComment,
+  setCommentStatus,
   removeComment,
   removeReply,
   addReply,
-  editReply,
+  setReplyCommentStatus,
 } = require("./comment.controller");
 
 //* Validator Schema
@@ -33,7 +33,8 @@ router
   .route("/:commentID")
   .patch(
     passport.authenticate("accessToken", { session: false }),
-    rolesGuard(["OWNER", "ADMIN"], editComment)
+    rolesGuard(["OWNER", "ADMIN"]),
+    setCommentStatus
   )
   .delete(
     passport.authenticate("accessToken", { session: false }),
@@ -55,7 +56,7 @@ router
   .patch(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["OWNER", "ADMIN"]),
-    editReply
+    setReplyCommentStatus
   );
 
 module.exports = router;

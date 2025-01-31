@@ -47,7 +47,7 @@ const commentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    replay: {
+    replies: {
       type: [replaySchema],
     },
   },

@@ -190,6 +190,28 @@ exports.addReply = async (req, res, next) => {
 
 exports.removeReply = async (req, res, next) => {
   try {
+    const { commentID, replyID } = req.params;
+
+    if (!isValidObjectId(commentID) || !isValidObjectId(replyID)) {
+      return errorResponse(res, 409, "Comment Or Reply ID Not Valid !!");
+    }
+
+    const mainComment = await commentModel.findById(commentID);
+
+    if (!mainComment) {
+      return errorResponse(res, 404, "Comment Not Found !!");
+    }
+
+    const mainReply = mainComment.replies.id(replyID);
+
+    if (!mainReply) {
+      return errorResponse(res, 404, "Reply Comment Not Found !!");
+    }
+
+    mainComment.replies.pull(replyID);
+    await mainComment.save();
+
+    return successResponse(res, 200, "Reply Comment Removed Successfully.");
   } catch (error) {
     next(error);
   }

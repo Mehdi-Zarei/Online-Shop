@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const replaySchema = new mongoose.Schema(
+const replySchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -48,7 +48,7 @@ const commentSchema = new mongoose.Schema(
       required: true,
     },
     replies: {
-      type: [replaySchema],
+      type: [replySchema],
     },
   },
   { timestamps: true }

@@ -10,6 +10,25 @@ const {
 
 exports.getCart = async (req, res, next) => {
   try {
+    const userID = req.user._id;
+
+    const userCart = await cartModel
+      .findOne({ user: userID })
+      .populate("items.product", "name description images")
+      .populate("items.seller", "storeName")
+      .populate("user", "name")
+      .lean();
+
+    if (!userCart) {
+      return errorResponse(res, 404, "Your Cart Is Empty !!");
+    }
+
+    const totalCartPrice = userCart.items.reduce(
+      (total, item) => total + item.totalPrice,
+      0
+    );
+
+    return successResponse(res, 200, { userCart, totalCartPrice });
   } catch (error) {
     next(error);
   }

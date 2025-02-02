@@ -64,6 +64,7 @@ exports.addToCart = async (req, res, next) => {
             seller: sellerID,
             quantity,
             priceAtTimeOfAdding,
+            totalPrice: quantity * priceAtTimeOfAdding,
           },
         ],
       });
@@ -77,14 +78,16 @@ exports.addToCart = async (req, res, next) => {
     );
 
     if (isProductInCart) {
-      (isProductInCart.quantity += quantity),
-        (isProductInCart.priceAtTimeOfAdding += priceAtTimeOfAdding);
+      isProductInCart.quantity += quantity;
+      isProductInCart.priceAtTimeOfAdding = priceAtTimeOfAdding;
+      isProductInCart.totalPrice += priceAtTimeOfAdding * quantity;
     } else {
       isTheCartExist.items.push({
         product: productID,
         seller: sellerID,
         quantity,
         priceAtTimeOfAdding,
+        totalPrice: quantity * priceAtTimeOfAdding,
       });
     }
 
@@ -98,6 +101,68 @@ exports.addToCart = async (req, res, next) => {
 
 exports.removeFromCart = async (req, res, next) => {
   try {
+    const { productID, sellerID, quantity } = req.body;
+
+    const userID = req.user._id;
+
+    if (!isValidObjectId(productID) || !isValidObjectId(sellerID)) {
+      return errorResponse(res, 409, "Product Or Seller ID Not Valid !!");
+    }
+
+    const userCart = await cartModel.findOne({ user: userID });
+
+    if (!userCart) {
+      return errorResponse(res, 404, "Cart Not Found !!");
+    }
+
+    const mainProduct = await productModel.findById(productID);
+
+    if (!mainProduct) {
+      const removeProduct = userCart.items.find((p) =>
+        p.product.equals(productID)
+      );
+
+      if (removeProduct) {
+        userCart.items.pull(removeProduct);
+        await userCart.save();
+        return errorResponse(
+          res,
+          404,
+          "This product has been discontinued and will be removed from your cart."
+        );
+      }
+      return errorResponse(res, 404, "Product Not Found !!");
+    }
+
+    const reduceQuantity = userCart.items.find(
+      (p) => p.product.equals(productID) && p.seller.equals(sellerID)
+    );
+
+    if (!reduceQuantity) {
+      return errorResponse(
+        res,
+        404,
+        "This product is not available in your shopping cart!! "
+      );
+    }
+
+    if (reduceQuantity.quantity <= quantity) {
+      userCart.items.pull(reduceQuantity);
+      await userCart.save();
+      return successResponse(
+        res,
+        200,
+        "The entire product has been successfully removed from your cart."
+      );
+    } else {
+      reduceQuantity.quantity -= quantity;
+      reduceQuantity.totalPrice =
+        reduceQuantity.quantity * reduceQuantity.priceAtTimeOfAdding;
+    }
+
+    await userCart.save();
+
+    return successResponse(res, 200, { Cart: reduceQuantity });
   } catch (error) {
     next(error);
   }

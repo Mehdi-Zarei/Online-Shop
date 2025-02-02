@@ -6,6 +6,7 @@ const passport = require("passport");
 const { bodyValidator } = require("../../../middlewares/validator");
 
 //* Validator Schema
+const { cartItemSchema } = require("./cart.validator");
 
 //* Controllers
 
@@ -19,12 +20,17 @@ router
 
 router
   .route("/add")
-  .post(passport.authenticate("accessToken", { session: false }), addToCart);
+  .post(
+    passport.authenticate("accessToken", { session: false }),
+    bodyValidator(cartItemSchema),
+    addToCart
+  );
 
 router
   .route("/remove")
   .delete(
     passport.authenticate("accessToken", { session: false }),
+    bodyValidator(cartItemSchema),
     removeFromCart
   );
 

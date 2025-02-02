@@ -21,6 +21,10 @@ const cartItemsSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true }
 );
@@ -36,11 +40,6 @@ const cartSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-cartSchema.pre("save", function (next) {
-  this.updatedAt = Date.now();
-  next();
-});
 
 const cart = mongoose.model("cart", cartSchema);
 

@@ -1,6 +1,5 @@
 const { isValidObjectId } = require("mongoose");
 const commentModel = require("../../../../models/comment");
-const userModel = require("../../../../models/users");
 const productModel = require("../../../../models/product");
 
 //* Helper Functions

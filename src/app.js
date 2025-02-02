@@ -14,6 +14,7 @@ const categoryRouter = require("./modules/categories/V1/category.routes");
 const productsRouter = require("./modules/product/product.routes");
 const notesRouter = require("./modules/note/V1/note.routes");
 const commentRouter = require("./modules/comment/V1/comment.routes");
+const cartRouter = require("./modules/cart/V1/cart.routes");
 const sellerRequestRouter = require("./modules/sellerRequest/V1/sellerRequest.routes");
 
 const {
@@ -57,6 +58,7 @@ app.use("/api/v1/products", productsRouter);
 app.use("/api/v1/notes", notesRouter);
 app.use("/api/v1/seller-requests", sellerRequestRouter);
 app.use("/api/v1/comments", commentRouter);
+app.use("/api/v1/cart", cartRouter);
 app.get("/api/v1/p/:shortIdentifier", redirectToProductPage);
 
 //* 404 Error Handler

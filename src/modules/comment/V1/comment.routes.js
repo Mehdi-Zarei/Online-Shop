@@ -18,7 +18,12 @@ const {
 } = require("./comment.controller");
 
 //* Validator Schema
-// todo : validations
+const {
+  createCommentSchema,
+  setCommentStatusSchema,
+  addReplyCommentSchema,
+} = require("./comment.validator");
+
 //* Routes
 
 router
@@ -26,6 +31,7 @@ router
   .get(getAllComments)
   .post(
     passport.authenticate("accessToken", { session: false }),
+    bodyValidator(createCommentSchema),
     createComment
   );
 
@@ -34,6 +40,7 @@ router
   .patch(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["OWNER", "ADMIN"]),
+    bodyValidator(setCommentStatusSchema),
     setCommentStatus
   )
   .delete(
@@ -44,7 +51,11 @@ router
 
 router
   .route("/:commentID/reply")
-  .post(passport.authenticate("accessToken", { session: false }), addReply);
+  .post(
+    passport.authenticate("accessToken", { session: false }),
+    bodyValidator(addReplyCommentSchema),
+    addReply
+  );
 
 router
   .route("/:commentID/reply/:replyID")
@@ -56,6 +67,7 @@ router
   .patch(
     passport.authenticate("accessToken", { session: false }),
     rolesGuard(["OWNER", "ADMIN"]),
+    bodyValidator(setCommentStatusSchema),
     setReplyCommentStatus
   );
 

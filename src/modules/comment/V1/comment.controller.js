@@ -109,6 +109,40 @@ exports.createComment = async (req, res, next) => {
   }
 };
 
+exports.adminGetAllComments = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10 } = req.query;
+
+    const comments = await commentModel
+      .find()
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("product", "name description images")
+      .populate({
+        path: "replies.user",
+        select: "name",
+      })
+      .select("-__v")
+      .lean();
+
+    if (comments.length === 0) {
+      return errorResponse(res, 404, "Comments Not Found !!");
+    }
+
+    const pagination = createPagination(
+      page,
+      limit,
+      comments.length,
+      "Comments"
+    );
+
+    return successResponse(res, 200, { comments, pagination });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.setCommentStatus = async (req, res, next) => {
   try {
     const { commentID } = req.params;

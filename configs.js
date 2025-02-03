@@ -41,6 +41,13 @@ module.exports = {
     pass: process.env.nodemailerPasswordAccount,
   },
 
+  zarinpal: {
+    merchantID: process.env.ZARINPAL_MERCHANT_ID,
+    apiBaseUrl: process.env.ZARINPAL_API_BASE_URL,
+    paymentBaseUrl: process.env.ZARINPAL_PAYMENT_BASE_URL,
+    paymentCallbackUrl: process.env.ZARINPAL_PAYMENT_CALLBACK_URL,
+  },
+
   domain: process.env.DOMAIN,
 
   isProduction: process.env.NODE_ENV,

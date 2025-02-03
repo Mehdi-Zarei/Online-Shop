@@ -10,6 +10,7 @@ const passport = require("passport");
 const {
   getAllComments,
   createComment,
+  adminGetAllComments,
   setCommentStatus,
   removeComment,
   removeReply,
@@ -33,6 +34,14 @@ router
     passport.authenticate("accessToken", { session: false }),
     bodyValidator(createCommentSchema),
     createComment
+  );
+
+router
+  .route("/all")
+  .get(
+    passport.authenticate("accessToken", { session: false }),
+    rolesGuard(["OWNER", "ADMIN"]),
+    adminGetAllComments
   );
 
 router

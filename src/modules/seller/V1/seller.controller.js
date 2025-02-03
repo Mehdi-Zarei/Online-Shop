@@ -2,6 +2,7 @@ const { isValidObjectId } = require("mongoose");
 
 const sellerModel = require("../../../../models/seller");
 const usersModel = require("../../../../models/users");
+const productModel = require("../../../../models/product");
 
 const provinces = require("../../../../Cities/provinces.json");
 const cities = require("../../../../Cities/cities.json");
@@ -186,8 +187,6 @@ exports.updateSellerInfo = async (req, res, next) => {
       physicalAddress,
     } = req.body;
 
-    //TODO : Validation
-
     const isSellerExist = await sellerModel.findById(storeID);
 
     if (!isSellerExist) {
@@ -230,32 +229,20 @@ exports.removeSellerStore = async (req, res, next) => {
       return errorResponse(res, 409, "Store ID Not Valid !!");
     }
 
-    const isSellerExist = await sellerModel.findById(storeID);
+    const isSellerExist = await sellerModel.findOneAndDelete({ _id: storeID });
 
     if (!isSellerExist) {
       return errorResponse(res, 404, "Store Not Found !!");
     }
 
-    if (req.user.roles.some((role) => ["OWNER", "ADMIN"].includes(role))) {
-      await sellerModel.findByIdAndDelete(isSellerExist._id);
+    await productModel.updateMany(
+      {
+        "sellers.sellerID": storeID,
+      },
+      { $pull: { sellers: { sellerID: storeID } } }
+    );
 
-      return successResponse(
-        res,
-        200,
-        `Store Removed By ${req.user.roles.join(", ")} Successfully.`
-      );
-    }
-
-    if (isSellerExist.userID.toString() !== req.user.id.toString()) {
-      return errorResponse(res, 403, "You Don't Have Access To This Route !!");
-    }
-
-    isSellerExist.deleteOne();
-
-    //TODO : Deleted Seller Products
-    //TODO : Deleted Seller Products From User Shopping Basket
-
-    return successResponse(res, 200, "Store Removed By Seller Successfully.");
+    return successResponse(res, 200, `Store Removed Successfully.`);
   } catch (error) {
     next(error);
   }

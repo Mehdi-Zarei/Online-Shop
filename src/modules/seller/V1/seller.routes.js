@@ -51,6 +51,7 @@ router
   .route("/:storeID")
   .delete(
     passport.authenticate("accessToken", { session: false }),
+    rolesGuard(["OWNER", "ADMIN"]),
     removeSellerStore
   )
   .get(passport.authenticate("accessToken", { session: false }), getInfo);

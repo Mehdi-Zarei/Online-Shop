@@ -1,29 +1,36 @@
 const mongoose = require("mongoose");
 
-const orderItemSchema = new mongoose.Schema({
-  product: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Product",
-    required: true,
-  },
+const orderItemSchema = new mongoose.Schema(
+  {
+    product: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+    },
 
-  seller: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Seller",
-    required: true,
-  },
+    seller: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Seller",
+      required: true,
+    },
 
-  quantity: {
-    type: Number,
-    required: true,
-    min: 1,
-  },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
 
-  priceAtTimeOfPurchase: {
-    type: Number,
-    required: true,
+    priceAtTimeOfPurchase: {
+      type: Number,
+      required: true,
+    },
+    totalPrice: {
+      type: Number,
+      required: true,
+    },
   },
-});
+  { timestamps: true }
+);
 
 const orderSchema = new mongoose.Schema(
   {
@@ -35,10 +42,43 @@ const orderSchema = new mongoose.Schema(
 
     items: [orderItemSchema],
 
-    shippingAddress: {
-      type: String,
-      required: true,
-    },
+    shippingAddress: [
+      {
+        addressName: {
+          type: String,
+          required: true,
+        },
+        postalCode: {
+          type: Number,
+          required: true,
+        },
+        location: {
+          lat: {
+            // طول جغرافیایی
+            type: Number,
+            required: true,
+          },
+          lng: {
+            // عرض جغرافیایی
+            type: Number,
+            required: true,
+          },
+        },
+        provincesID: {
+          type: Number,
+          required: true,
+        },
+
+        cityID: {
+          type: Number,
+          required: true,
+        },
+        physicalAddress: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
 
     postTrackingCode: {
       type: String,
@@ -54,6 +94,11 @@ const orderSchema = new mongoose.Schema(
       type: String,
       unique: true,
       required: true,
+    },
+    totalCartPrice: {
+      type: Number,
+      required: true,
+      default: 0,
     },
   },
   { timestamps: true }

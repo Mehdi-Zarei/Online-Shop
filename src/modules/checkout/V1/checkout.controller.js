@@ -1,10 +1,11 @@
 const cartModel = require("../../../../models/cart");
 const productModel = require("../../../../models/product");
 const checkoutModel = require("../../../../models/checkout");
+const orderModel = require("../../../../models/order");
 
 const { isValidObjectId } = require("mongoose");
 
-const { createPayment } = require("../../../services/zarinpal");
+const { createPayment, verifyPayment } = require("../../../services/zarinpal");
 
 const {
   errorResponse,
@@ -69,30 +70,99 @@ exports.createCheckout = async (req, res, next) => {
       totalCartPrice: cart.totalCartPrice,
     });
 
-    const payment = await createPayment({
+    const newPayment = await createPayment({
       amountInRial: cart.totalCartPrice,
       description: `سفارش با شناسه ${newCheckout._id}`,
       mobile: user.phone,
     });
 
-    newCheckout.authority = payment.authority;
+    newCheckout.authority = newPayment.authority;
 
     await newCheckout.save();
 
     return successResponse(res, 201, {
       message: "Checkout created successfully :))",
       checkout: newCheckout,
-      paymentUrl: payment.paymentUrl,
+      paymentUrl: newPayment.paymentUrl,
     });
   } catch (error) {
-    console.error("Error creating checkout:", error);
     next(error);
   }
 };
 
 exports.verifyCheckout = async (req, res, next) => {
   try {
+    const { Status, Authority: authority } = req.query;
+
+    const alreadyCreatedOrder = await orderModel.findOne({ authority });
+
+    if (alreadyCreatedOrder) {
+      return errorResponse(res, 400, "Payment Already Verified !!");
+    }
+
+    const checkoutExist = await checkoutModel.findOne({ authority });
+
+    if (!checkoutExist) {
+      return errorResponse(res, 404, "Checkout Not Found !!");
+    }
+
+    const verifyPaymentStatus = await verifyPayment({
+      amountInRial: checkoutExist.totalCartPrice,
+      authority,
+    });
+
+    if (![100, 101].includes(verifyPaymentStatus.code) || Status !== "OK") {
+      return errorResponse(res, 400, "Payment Not Verified !!");
+    }
+
+    for (const item of checkoutExist.items) {
+      const product = await productModel.findById(item.product);
+
+      if (product) {
+        const sellerInfo = product.sellers.find((sellerData) =>
+          sellerData.sellerID.equals(item.seller)
+        );
+
+        if (sellerInfo && sellerInfo.stock >= item.quantity) {
+          sellerInfo.stock -= item.quantity;
+          await product.save();
+        } else {
+          throw new Error("Insufficient product inventory");
+        }
+      }
+    }
+
+    const orderItems = JSON.parse(JSON.stringify(checkoutExist.items));
+
+    const shippingAddress = JSON.parse(
+      JSON.stringify(checkoutExist.shippingAddress)
+    );
+
+    const newOrder = new orderModel({
+      user: checkoutExist.user,
+      items: orderItems,
+      shippingAddress,
+      authority: checkoutExist.authority,
+      totalCartPrice: checkoutExist.totalCartPrice,
+    });
+
+    await newOrder.save();
+
+    await cartModel.findOneAndUpdate(
+      { user: checkoutExist.user },
+      { items: [] }
+    );
+
+    await checkoutExist.deleteOne(checkoutExist._id);
+
+    return successResponse(
+      res,
+      201,
+      "Payment Verified Successfully.",
+      newOrder
+    );
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };

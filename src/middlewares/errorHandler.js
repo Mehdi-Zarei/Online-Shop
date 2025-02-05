@@ -4,7 +4,7 @@ exports.errorHandler = (err, req, res, next) => {
   if (err.name === "ValidationError") {
     const errors = [];
 
-    err.inner.forEach((e) => {
+    err.inner?.forEach((e) => {
       errors.push({
         field: e.path,
         message: e.message,

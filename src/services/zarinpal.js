@@ -32,11 +32,19 @@ exports.createPayment = async function ({ amountInRial, description, mobile }) {
 
 exports.verifyPayment = async function ({ amountInRial, authority }) {
   try {
-    const response = await zarinpal.post("/verify.json", {
-      merchant_id: configs.zarinpal.merchantID,
-      amount: amountInRial,
-      authority,
-    });
+    const response = await zarinpal.post(
+      "/verify.json",
+      {
+        merchant_id: configs.zarinpal.merchantID,
+        amount: amountInRial,
+        authority,
+      },
+      {
+        validateStatus: function (status) {
+          return status <= 500;
+        },
+      }
+    );
 
     const data = response.data.data;
 

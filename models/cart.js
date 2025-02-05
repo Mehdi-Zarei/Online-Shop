@@ -17,7 +17,7 @@ const cartItemsSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
-    priceAtTimeOfAdding: {
+    priceAtTimeOfPurchase: {
       type: Number,
       required: true,
     },
@@ -36,10 +36,24 @@ const cartSchema = new mongoose.Schema(
       ref: "user",
       required: true,
     },
+
     items: [cartItemsSchema],
+
+    totalCartPrice: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
   },
   { timestamps: true }
 );
+
+cartSchema.pre("save", function (next) {
+  this.totalCartPrice = this.items.reduce((total, item) => {
+    return total + item.priceAtTimeOfPurchase * item.quantity;
+  }, 0);
+  next();
+});
 
 const cart = mongoose.model("cart", cartSchema);
 

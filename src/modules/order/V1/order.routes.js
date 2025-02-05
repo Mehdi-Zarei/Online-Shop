@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 //* Middleware
-const roleGuard = require("../../../../middlewares/rolesGuard");
+const roleGuard = require("../../../middlewares/rolesGuard");
 const passport = require("passport");
 
 //* Controllers

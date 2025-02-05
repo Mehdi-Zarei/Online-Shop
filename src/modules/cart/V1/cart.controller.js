@@ -23,12 +23,7 @@ exports.getCart = async (req, res, next) => {
       return errorResponse(res, 404, "Your Cart Is Empty !!");
     }
 
-    const totalCartPrice = userCart.items.reduce(
-      (total, item) => total + item.totalPrice,
-      0
-    );
-
-    return successResponse(res, 200, { userCart, totalCartPrice });
+    return successResponse(res, 200, userCart);
   } catch (error) {
     next(error);
   }
@@ -70,7 +65,7 @@ exports.addToCart = async (req, res, next) => {
       );
     }
 
-    const priceAtTimeOfAdding = sellerDetails.price;
+    const priceAtTimeOfPurchase = sellerDetails.price;
 
     const isTheCartExist = await cartModel.findOne({ user: userID });
 
@@ -82,8 +77,8 @@ exports.addToCart = async (req, res, next) => {
             product: productID,
             seller: sellerID,
             quantity,
-            priceAtTimeOfAdding,
-            totalPrice: quantity * priceAtTimeOfAdding,
+            priceAtTimeOfPurchase,
+            totalPrice: quantity * priceAtTimeOfPurchase,
           },
         ],
       });
@@ -98,15 +93,15 @@ exports.addToCart = async (req, res, next) => {
 
     if (isProductInCart) {
       isProductInCart.quantity += quantity;
-      isProductInCart.priceAtTimeOfAdding = priceAtTimeOfAdding;
-      isProductInCart.totalPrice += priceAtTimeOfAdding * quantity;
+      isProductInCart.priceAtTimeOfPurchase = priceAtTimeOfPurchase;
+      isProductInCart.totalPrice += priceAtTimeOfPurchase * quantity;
     } else {
       isTheCartExist.items.push({
         product: productID,
         seller: sellerID,
         quantity,
-        priceAtTimeOfAdding,
-        totalPrice: quantity * priceAtTimeOfAdding,
+        priceAtTimeOfPurchase,
+        totalPrice: quantity * priceAtTimeOfPurchase,
       });
     }
 
@@ -176,7 +171,7 @@ exports.removeFromCart = async (req, res, next) => {
     } else {
       reduceQuantity.quantity -= quantity;
       reduceQuantity.totalPrice =
-        reduceQuantity.quantity * reduceQuantity.priceAtTimeOfAdding;
+        reduceQuantity.quantity * reduceQuantity.priceAtTimeOfPurchase;
     }
 
     await userCart.save();

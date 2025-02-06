@@ -155,12 +155,10 @@ exports.verifyCheckout = async (req, res, next) => {
 
     await checkoutExist.deleteOne(checkoutExist._id);
 
-    return successResponse(
-      res,
-      201,
-      "Payment Verified Successfully.",
-      newOrder
-    );
+    return successResponse(res, 201, "Payment Verified Successfully.", {
+      newOrder,
+      transactionNumber: verifyPaymentStatus.ref_id,
+    });
   } catch (error) {
     console.log(error);
     next(error);

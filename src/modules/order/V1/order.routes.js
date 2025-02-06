@@ -3,7 +3,11 @@ const router = express.Router();
 
 //* Middleware
 const roleGuard = require("../../../middlewares/rolesGuard");
+const { bodyValidator } = require("../../../middlewares/validator");
 const passport = require("passport");
+
+//* Validator Schema
+const { updateOrderSchema } = require("./order.validator");
 
 //* Controllers
 const { getAllOrders, updateOrder } = require("./order.controller");
@@ -18,6 +22,7 @@ router
   .patch(
     passport.authenticate("accessToken", { session: false }),
     roleGuard(["OWNER", "ADMIN"]),
+    bodyValidator(updateOrderSchema),
     updateOrder
   );
 

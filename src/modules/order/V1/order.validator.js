@@ -1,8 +1,6 @@
 const yup = require("yup");
 
 const updateOrderSchema = yup.object({
-  id: yup.string().required("Order id is required"),
-
   postTrackingCode: yup
     .number()
     .typeError("postTrackingCode must be a number")

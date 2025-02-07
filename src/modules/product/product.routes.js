@@ -20,6 +20,7 @@ const upload = multerStorage("public/images/products", 5, [
 const {
   create,
   getAllProducts,
+  getAllProductsWithFilters,
   getMainProduct,
   updateProductInfo,
   deleteProduct,
@@ -31,6 +32,8 @@ router
   .route("/")
   .post(rolesGuard(["OWNER", "ADMIN"]), upload.array("images", 10), create)
   .get(getAllProducts);
+
+router.route("/filters").get(getAllProductsWithFilters);
 
 router
   .route("/:id")

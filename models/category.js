@@ -36,9 +36,9 @@ const categorySchema = new mongoose.Schema(
 );
 
 categorySchema.virtual("subCategories", {
-  ref: "SubCategory", // مدل مرجع
-  localField: "_id", // فیلد محلی (آیدی دسته‌بندی اصلی)
-  foreignField: "parent", // فیلد خارجی (فیلدی در SubCategory که به Category رفرنس می‌دهد)
+  ref: "SubCategory",
+  localField: "_id",
+  foreignField: "parent",
 });
 
 const Category = mongoose.model("Category", categorySchema);

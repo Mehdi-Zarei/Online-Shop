@@ -1,4 +1,4 @@
-const { isValidObjectId } = require("mongoose");
+const { isValidObjectId, default: mongoose } = require("mongoose");
 const { nanoid } = require("nanoid");
 const slugify = require("slugify");
 const fs = require("fs");
@@ -157,6 +157,160 @@ exports.getAllProducts = async (req, res, next) => {
       page,
       limit,
       totalProductsCount,
+      "Products"
+    );
+
+    return successResponse(res, 200, { products, pagination });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getAllProductsWithFilters = async (req, res, next) => {
+  try {
+    const {
+      page = 1,
+      limit = 10,
+      name,
+      childSubCategory,
+      sellers,
+      filterValues,
+      customFilters,
+      minPrice,
+      maxPrice,
+    } = req.query;
+
+    const filters = {
+      "sellers.stock": { $gt: 0 },
+    };
+
+    if (name) {
+      const nameRegex = /^(?!\d+$)([\u0600-\u06FFa-zA-Z0-9\s]+)$/;
+
+      if (nameRegex.test(name)) {
+        filters.name = { $regex: name, $options: "i" };
+      } else {
+        return errorResponse(
+          res,
+          400,
+          "Invalid characters in name. Only English and Persian letters are allowed."
+        );
+      }
+    }
+
+    if (minPrice) {
+      if (!parseFloat(minPrice)) {
+        return errorResponse(res, 400, "minPrice must be a number !!");
+      }
+      if (!filters["sellers.price"]) {
+        filters["sellers.price"] = {};
+      }
+      filters["sellers.price"].$gte = +minPrice;
+    }
+
+    if (maxPrice) {
+      if (!parseFloat(maxPrice)) {
+        return errorResponse(res, 400, "maxPrice must be a number !!");
+      }
+      if (!filters["sellers.price"]) {
+        filters["sellers.price"] = {};
+      }
+      filters["sellers.price"].$lte = +maxPrice;
+    }
+
+    if (childSubCategory) {
+      if (!isValidObjectId(childSubCategory)) {
+        return errorResponse(res, 409, "Category ID Not Valid !!");
+      }
+      filters.childSubCategory =
+        mongoose.Types.ObjectId.createFromHexString(childSubCategory);
+    }
+
+    if (sellers) {
+      if (!isValidObjectId(sellers)) {
+        return errorResponse(res, 409, "seller ID Not Valid !!");
+      }
+      filters["sellers.sellerID"] =
+        mongoose.Types.ObjectId.createFromHexString(sellers);
+    }
+
+    if (filterValues) {
+      try {
+        const parsedFilterValues = JSON.parse(filterValues);
+
+        Object.keys(parsedFilterValues).forEach((key) => {
+          filters[`filterValues.${key}`] = parsedFilterValues[key];
+        });
+      } catch (error) {
+        return errorResponse(res, 400, "Invalid JSON format for filterValues!");
+      }
+    }
+
+    if (customFilters) {
+      try {
+        const parsedCustomFilters = JSON.parse(customFilters);
+
+        Object.keys(parsedCustomFilters).forEach((key) => {
+          filters[`customFilters.${key}`] = parsedCustomFilters[key];
+        });
+      } catch (error) {
+        return errorResponse(res, 400, "Invalid JSON format for filterValues!");
+      }
+    }
+
+    const products = await productModel.aggregate([
+      {
+        $match: filters,
+      },
+      {
+        $lookup: {
+          from: "comments",
+          localField: "_id",
+          foreignField: "product",
+          as: "ProductComments",
+        },
+      },
+      {
+        $lookup: {
+          from: "sellers",
+          localField: "sellers.sellerID",
+          foreignField: "_id",
+          as: "productSellers",
+        },
+      },
+      {
+        $addFields: {
+          averageRating: {
+            $cond: {
+              if: {
+                $gt: [{ $size: { $ifNull: ["$ProductComments", []] } }, 0],
+              },
+              then: { $avg: `$ProductComments.score` },
+              else: 0,
+            },
+          },
+        },
+      },
+      {
+        $skip: (+page - 1) * +limit,
+      },
+      {
+        $limit: +limit,
+      },
+    ]);
+
+    if (products.length === 0) {
+      return errorResponse(
+        res,
+        404,
+        "Product Not Found With This Filtering !!"
+      );
+    }
+
+    const pagination = createPagination(
+      page,
+      limit,
+      products.length,
       "Products"
     );
 

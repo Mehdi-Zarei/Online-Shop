@@ -25,6 +25,10 @@ const {
 
 const { errorHandler } = require("./middlewares/errorHandler");
 
+//* Swagger Doc
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./utils/swagger.js");
+
 //* Passport Path Files
 const passport = require("passport");
 const passportLocal = require("./strategies/passport-local");
@@ -64,6 +68,7 @@ app.use("/api/v1/cart", cartRouter);
 app.use("/api/v1/checkouts", checkoutRouter);
 app.use("/api/v1/orders", orderRouter);
 app.get("/api/v1/p/:shortIdentifier", redirectToProductPage);
+app.use("/apis/v1", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 //* 404 Error Handler
 

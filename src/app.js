@@ -26,8 +26,7 @@ const {
 const { errorHandler } = require("./middlewares/errorHandler");
 
 //* Swagger Doc
-const swaggerUi = require("swagger-ui-express");
-const swaggerSpec = require("./utils/swagger.js");
+const { swaggerUi, swaggerSpec } = require("./utils/swagger.js");
 
 //* Passport Path Files
 const passport = require("passport");

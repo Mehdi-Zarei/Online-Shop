@@ -1,0 +1,611 @@
+openapi: 3.0.0
+info:
+  title: Authentication API
+  version: 1.0.0
+  description: API for authentication, including OTP sending.
+
+servers:
+  - url: http://localhost:3000/apis
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: Endpoints related to user authentication
+
+components:
+  securitySchemes:
+    accessToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: "Access token must be included in the Authorization header with the prefix 'Bearer'."
+    refreshToken:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: "Refresh token must be included in the Authorization header with the prefix 'Bearer'."
+
+paths:
+  /api/v1/auth/sent:
+    post:
+      tags:
+        - Authentication
+      summary: "Send OTP code to a phone number"
+      description: "Sends an OTP code for user authentication during login or registration."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - type
+              properties:
+                phone:
+                  type: string
+                  description: "User's phone number"
+                  example: "09123456789"
+                type:
+                  type: string
+                  description: "Request type: 'register' or 'login'"
+                  enum: ["register", "login"]
+                  example: "register"
+
+      responses:
+        "200":
+          description: "OTP code sent successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Otp Code Sent Successfully To Your Phone Number."
+                  phone:
+                    type: string
+                    example: "09123456789"
+        "400":
+          description: "Invalid request or OTP already sent."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OTP already sent, Please try again after 60 seconds"
+        "404":
+          description: "User not found (for login)."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User not found!"
+        "409":
+          description: "User already exists (for register) or is banned."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User Already Exist With This Phone Number !!"
+        "500":
+          description: "Server error or OTP service failure."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to send OTP code. Please try again later."
+  /api/v1/auth/verify:
+    post:
+      tags:
+        - Authentication
+      summary: "Verify OTP and register a new user"
+      description: "Verifies OTP, checks if the email exists, and registers a new user if successful."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - otp
+                - name
+                - email
+                - password
+                - confirmPassword
+                - isSeller
+              properties:
+                phone:
+                  type: string
+                  description: "User's phone number"
+                  example: "09123456789"
+                otp:
+                  type: string
+                  description: "One-time password (OTP) sent to the user's phone number"
+                  example: "12345"
+                name:
+                  type: string
+                  description: "User's full name"
+                  example: "John Doe"
+                email:
+                  type: string
+                  description: "User's email address"
+                  example: "johndoe@example.com"
+                password:
+                  type: string
+                  description: "User's password"
+                  example: "Securepassword@123"
+                confirmPassword:
+                  type: string
+                  description: "User's confirmPassword"
+                  example: "Securepassword@123"
+                isSeller:
+                  type: boolean
+                  description: "Whether the user is a seller"
+                  example: false
+      responses:
+        "201":
+          description: "New user created successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "New User Created Successfully."
+                  accessToken:
+                    type: string
+                    example: "access_token_example"
+                  refreshToken:
+                    type: string
+                    example: "refresh_token_example"
+        "400":
+          description: "Bad request or missing parameters."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Bad request."
+        "404":
+          description: "OTP verification failed or expired."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OTP Code Has Expired Or Incorrect."
+        "409":
+          description: "Conflict, email address already exists."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "This Email Address Already Exist !!"
+  /api/v1/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: "Login a user and generate access and refresh tokens"
+      description: "Validates user credentials, generates access and refresh tokens upon successful login."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - identifier (email or phone)
+                - password
+              properties:
+                identifier:
+                  type: string
+                  description: "User's email address or phone number"
+                  example: "johndoe@example.com"
+                password:
+                  type: string
+                  description: "User's password"
+                  example: "Securepassword@123"
+      responses:
+        "200":
+          description: "User logged in successfully, tokens generated."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User Logged In Successfully."
+                  accessToken:
+                    type: string
+                    example: "access_token_example"
+                  refreshToken:
+                    type: string
+                    example: "refresh_token_example"
+        "400":
+          description: "Invalid credentials or missing parameters."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid credentials or missing parameters."
+        "401":
+          description: "Unauthorized, incorrect credentials."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid email or password."
+  /api/v1/auth/login-otp:
+    post:
+      tags:
+        - Authentication
+      summary: "Login a user using OTP"
+      description: "Validates the OTP sent to the user's phone and generates access and refresh tokens upon successful login."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phone
+                - otp
+              properties:
+                phone:
+                  type: string
+                  description: "User's phone number"
+                  example: "09123456789"
+                otp:
+                  type: string
+                  description: "One-time password (OTP) sent to the user's phone"
+                  example: "12345"
+      responses:
+        "200":
+          description: "User logged in successfully with OTP, tokens generated."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "You Are Login Successfully."
+                  accessToken:
+                    type: string
+                    example: "access_token_example"
+                  refreshToken:
+                    type: string
+                    example: "refresh_token_example"
+        "400":
+          description: "Invalid or expired OTP."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OTP code is required."
+        "404":
+          description: "OTP code not found or expired."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OTP Code Has Expired !!Please reapply."
+        "409":
+          description: "User is banned or restricted."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "This User is banned!"
+  /api/v1/google:
+    get:
+      tags:
+        - Authentication
+      summary: "Authenticate with Google"
+      description: "Redirects to Google OAuth for user authentication."
+      responses:
+        "302":
+          description: "Redirect to Google for authentication."
+          headers:
+            Location:
+              description: "Google OAuth redirection URL"
+              schema:
+                type: string
+                example: "https://accounts.google.com/o/oauth2/v2/auth?...&redirect_uri=..."
+        "500":
+          description: "Server error, unable to redirect to Google."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unable to authenticate with Google. Please try again later."
+  /api/v1/auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: "Get current user profile"
+      description: "Returns the profile information of the authenticated user."
+      security:
+        - accessToken: [] # Use the access token for authentication
+      responses:
+        "200":
+          description: "Successfully retrieved user profile."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "OK"
+                  user:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "60d9f4e4b1c76a001f0e7f45"
+                      name:
+                        type: string
+                        example: "John Doe"
+                      email:
+                        type: string
+                        example: "john.doe@example.com"
+                      phone:
+                        type: string
+                        example: "09123456789"
+        "401":
+          description: "Unauthorized, missing or invalid access token."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized. Access token is missing or invalid."
+  /api/v1/refresh:
+    get:
+      tags:
+        - Authentication
+      summary: "Refresh access token"
+      description: "This endpoint returns a new access token when a valid refresh token is provided."
+      security:
+        - refreshToken: [] # Use the refresh token for authentication
+      responses:
+        "200":
+          description: "Successfully refreshed access token."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                    example: "new_access_token_value_here"
+        "401":
+          description: "Unauthorized, missing or invalid refresh token."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized. Refresh token is missing or invalid."
+  /api/v1/forget-password:
+    post:
+      tags:
+        - Authentication
+      summary: "Send reset password link"
+      description: "This endpoint sends a reset password link to the user's email."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  description: "User's email address"
+                  example: "user@example.com"
+      responses:
+        "200":
+          description: "Email has been sent successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Email has been sent successfully."
+        "400":
+          description: "Invalid email format."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid email format."
+        "404":
+          description: "User not found with this email."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User Not Found With This Email !!"
+        "403":
+          description: "User is banned."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "This User Already Is Banned !!"
+        "500":
+          description: "Failed to send email."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to send email. Please try again later."
+  /api/v1/reset-password/{token}:
+    post:
+      tags:
+        - Authentication
+      summary: "Reset user password"
+      description: "This endpoint allows the user to reset their password using a valid token."
+      parameters:
+        - name: token
+          in: path
+          required: true
+          description: "Reset password token from the reset email link."
+          schema:
+            type: string
+            example: "valid-reset-token-here"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  description: "New password for the user."
+                  example: "newSecurePassword@123"
+      responses:
+        "200":
+          description: "Password updated successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Your Password Updated Successfully."
+        "400":
+          description: "Invalid password format."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid password format."
+        "404":
+          description: "Invalid or expired reset token or user not found."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid or expired reset token."
+        "500":
+          description: "Server error or failed to update password."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to update password. Please try again later."
+  /api/v1/logout:
+    post:
+      tags:
+        - Authentication
+      summary: "Log out the user"
+      description: "This endpoint allows the user to log out by removing the refresh token from Redis."
+      security:
+        - accessToken: []
+      responses:
+        "200":
+          description: "User logged out successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User logged out successfully."
+        "401":
+          description: "Unauthorized. Invalid or expired access token."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized. Invalid or expired access token."
+        "500":
+          description: "Server error while logging out."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to log out. Please try again later."

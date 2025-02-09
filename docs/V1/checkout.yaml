@@ -1,0 +1,148 @@
+paths:
+  /checkouts:
+    post:
+      tags:
+        - checkout
+      summary: "Create a new checkout"
+      description: "This route creates a checkout order for the user with selected shipping address and items in the cart."
+      security:
+        - accessToken: []
+      requestBody:
+        description: "Shipping address ID for the order"
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                shippingAddressID:
+                  type: "string"
+                  description: "ID of the selected shipping address"
+      responses:
+        201:
+          description: "Checkout created successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                  checkout:
+                    type: "object"
+                    properties:
+                      _id:
+                        type: "string"
+                      user:
+                        type: "string"
+                      items:
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            product:
+                              type: "string"
+                            seller:
+                              type: "string"
+                      shippingAddress:
+                        type: "object"
+                        properties:
+                          location:
+                            type: "string"
+                          addressName:
+                            type: "string"
+                          postalCode:
+                            type: "string"
+                          provincesID:
+                            type: "string"
+                          cityID:
+                            type: "string"
+                          physicalAddress:
+                            type: "string"
+                      totalCartPrice:
+                        type: "number"
+                        format: "float"
+                  paymentUrl:
+                    type: "string"
+        400:
+          description: "Invalid product or seller"
+        404:
+          description: "Cart not found or empty"
+        409:
+          description: "Invalid shipping address ID"
+        500:
+          description: "Internal server error"
+  /checkouts/verify:
+    get:
+      tags:
+        - checkout
+      summary: "Verify payment for a checkout"
+      description: "This route verifies the payment for a checkout order using the provided authority."
+      security:
+        - accessToken: []
+      parameters:
+        - name: Status
+          in: query
+          required: true
+          description: "The status of the payment (should be 'OK' for successful payments)"
+          schema:
+            type: string
+        - name: Authority
+          in: query
+          required: true
+          description: "The payment authority returned by the payment gateway"
+          schema:
+            type: string
+      responses:
+        201:
+          description: "Payment verified and order created successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                  newOrder:
+                    type: "object"
+                    properties:
+                      _id:
+                        type: "string"
+                      user:
+                        type: "string"
+                      items:
+                        type: "array"
+                        items:
+                          type: "object"
+                          properties:
+                            product:
+                              type: "string"
+                            seller:
+                              type: "string"
+                            quantity:
+                              type: "integer"
+                      shippingAddress:
+                        type: "object"
+                        properties:
+                          location:
+                            type: "string"
+                          addressName:
+                            type: "string"
+                          postalCode:
+                            type: "string"
+                          provincesID:
+                            type: "string"
+                          cityID:
+                            type: "string"
+                          physicalAddress:
+                            type: "string"
+                      totalCartPrice:
+                        type: "number"
+                        format: "float"
+                  transactionNumber:
+                    type: "string"
+        400:
+          description: "Payment already verified or insufficient stock"
+        404:
+          description: "Checkout not found"
+        500:
+          description: "Internal server error"

@@ -1,0 +1,316 @@
+paths:
+  /notes:
+    get:
+      tags:
+        - Notes
+      summary: "Get all notes for the authenticated user"
+      description: "This endpoint allows a user to retrieve all notes they have created for products, with support for pagination."
+      security:
+        - accessToken: []
+      parameters:
+        - name: page
+          in: query
+          description: "Page number for pagination"
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: "Number of notes per page"
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        "200":
+          description: "Successfully retrieved the user's notes."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Notes fetched successfully."
+                  data:
+                    type: object
+                    properties:
+                      notes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: string
+                              example: "63e2b3d4e4b0ac3f7038b76d"
+                            product:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                  example: "Product Name"
+                                description:
+                                  type: string
+                                  example: "Product description here"
+                                images:
+                                  type: array
+                                  items:
+                                    type: string
+                                    example: "http://example.com/image.jpg"
+                            content:
+                              type: string
+                              example: "This is the note content."
+                      pagination:
+                        type: object
+                        properties:
+                          totalCount:
+                            type: integer
+                            example: 50
+                          page:
+                            type: integer
+                            example: 1
+                          limit:
+                            type: integer
+                            example: 10
+                          totalPages:
+                            type: integer
+                            example: 5
+        "400":
+          description: "Invalid query parameters."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid query parameters."
+        "404":
+          description: "No notes found or all notes removed due to product deletion."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "You Don't Have Any Notes Yet Or Your Note's Removed After Product Deleted !!"
+        "500":
+          description: "Server error while fetching the notes."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to retrieve notes. Please try again later."
+
+    post:
+      tags:
+        - Notes
+      summary: "Create a new note for a product"
+      description: "This endpoint allows a user to create a new note for a product."
+      security:
+        - accessToken: []
+      requestBody:
+        description: "Note creation request body"
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productID
+                - content
+              properties:
+                productID:
+                  type: string
+                  example: "63e2b3d4e4b0ac3f7038b76d"
+                content:
+                  type: string
+                  example: "This is a note for the product."
+      responses:
+        "201":
+          description: "Successfully created the note."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "New Note Created Successfully."
+                  data:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        example: "63e2b3d4e4b0ac3f7038b76d"
+                      product:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                            example: "Product Name"
+                          description:
+                            type: string
+                            example: "Product description here"
+                          images:
+                            type: array
+                            items:
+                              type: string
+                              example: "http://example.com/image.jpg"
+                      content:
+                        type: string
+                        example: "This is the note content."
+        "400":
+          description: "Invalid request body."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid request body."
+        "409":
+          description: "Note already exists for this product."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Note has already been saved for this product."
+        "404":
+          description: "Product not found."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Product Not Found !!"
+        "500":
+          description: "Server error while creating the note."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Failed to create note. Please try again later."
+  /notes/{id}:
+    get:
+      tags:
+        - Notes
+      summary: "Retrieve a note by ID"
+      description: "Fetch a note associated with the authenticated user by its ID."
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "The ID of the note"
+          schema:
+            type: "string"
+      security:
+        - accessToken: []
+      responses:
+        200:
+          description: "Note found successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  note:
+                    type: "object"
+                    properties:
+                      _id:
+                        type: "string"
+                      content:
+                        type: "string"
+                      product:
+                        type: "object"
+                        properties:
+                          name:
+                            type: "string"
+                          description:
+                            type: "string"
+                          images:
+                            type: "array"
+                            items:
+                              type: "string"
+        404:
+          description: "Note not found"
+        409:
+          description: "Invalid ID format"
+
+    put:
+      tags:
+        - Notes
+      summary: "Update content of a note"
+      description: "Update the content of an existing note associated with the authenticated user."
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "The ID of the note"
+          schema:
+            type: "string"
+        - name: "content"
+          in: "body"
+          required: true
+          description: "The updated content of the note"
+          schema:
+            type: "object"
+            properties:
+              content:
+                type: "string"
+      security:
+        - accessToken: []
+      responses:
+        200:
+          description: "Note updated successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  updatedNote:
+                    type: "object"
+                    properties:
+                      _id:
+                        type: "string"
+                      content:
+                        type: "string"
+        404:
+          description: "Note not found"
+        409:
+          description: "Invalid ID format"
+
+    delete:
+      tags:
+        - Notes
+      summary: "Delete a note"
+      description: "Remove a note associated with the authenticated user by its ID."
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          description: "The ID of the note"
+          schema:
+            type: "string"
+      security:
+        - accessToken: []
+      responses:
+        200:
+          description: "Note removed successfully"
+        404:
+          description: "Note not found"
+        409:
+          description: "Invalid ID format"

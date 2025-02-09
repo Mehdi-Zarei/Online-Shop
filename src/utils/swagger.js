@@ -10,8 +10,26 @@ const swaggerDefinition = {
       "Node.js Shop Rest Apis Document.This project is a multi-vendor e-commerce platform that allows users to register, browse and purchase products, and vendors to list their own items for sale. Payments are processed through the Zarinpal gateway, and users can leave reviews for products.",
   },
 
-  host: "localhost:3000",
-  basePath: "/apis/v1",
+  servers: [
+    {
+      url: "http://localhost:3000/api/v1",
+      description: "Local server",
+    },
+  ],
+  components: {
+    securitySchemes: {
+      accessToken: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+      refreshToken: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+      },
+    },
+  },
 };
 
 const options = { swaggerDefinition, apis: ["./docs/V1/*.yaml"] };

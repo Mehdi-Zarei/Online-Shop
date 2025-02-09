@@ -12,21 +12,8 @@ tags:
   - name: Authentication
     description: Endpoints related to user authentication
 
-components:
-  securitySchemes:
-    accessToken:
-      type: apiKey
-      in: header
-      name: Authorization
-      description: "Access token must be included in the Authorization header with the prefix 'Bearer'."
-    refreshToken:
-      type: apiKey
-      in: header
-      name: Authorization
-      description: "Refresh token must be included in the Authorization header with the prefix 'Bearer'."
-
 paths:
-  /api/v1/auth/sent:
+  /auth/sent:
     post:
       tags:
         - Authentication
@@ -106,7 +93,7 @@ paths:
                   message:
                     type: string
                     example: "Failed to send OTP code. Please try again later."
-  /api/v1/auth/verify:
+  /auth/verify:
     post:
       tags:
         - Authentication
@@ -202,7 +189,7 @@ paths:
                   message:
                     type: string
                     example: "This Email Address Already Exist !!"
-  /api/v1/auth/login:
+  /auth/login:
     post:
       tags:
         - Authentication
@@ -263,7 +250,7 @@ paths:
                   message:
                     type: string
                     example: "Invalid email or password."
-  /api/v1/auth/login-otp:
+  /auth/login-otp:
     post:
       tags:
         - Authentication
@@ -334,7 +321,7 @@ paths:
                   message:
                     type: string
                     example: "This User is banned!"
-  /api/v1/google:
+  /auth/google:
     get:
       tags:
         - Authentication
@@ -359,7 +346,7 @@ paths:
                   message:
                     type: string
                     example: "Unable to authenticate with Google. Please try again later."
-  /api/v1/auth/me:
+  /auth/me:
     get:
       tags:
         - Authentication
@@ -403,7 +390,7 @@ paths:
                   message:
                     type: string
                     example: "Unauthorized. Access token is missing or invalid."
-  /api/v1/refresh:
+  /auth/refresh:
     get:
       tags:
         - Authentication
@@ -432,7 +419,7 @@ paths:
                   message:
                     type: string
                     example: "Unauthorized. Refresh token is missing or invalid."
-  /api/v1/forget-password:
+  /auth/forget-password:
     post:
       tags:
         - Authentication
@@ -502,7 +489,7 @@ paths:
                   message:
                     type: string
                     example: "Failed to send email. Please try again later."
-  /api/v1/reset-password/{token}:
+  /auth/reset-password/{token}:
     post:
       tags:
         - Authentication
@@ -570,7 +557,7 @@ paths:
                   message:
                     type: string
                     example: "Failed to update password. Please try again later."
-  /api/v1/logout:
+  /auth/logout:
     post:
       tags:
         - Authentication

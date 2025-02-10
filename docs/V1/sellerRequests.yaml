@@ -1,0 +1,337 @@
+paths:
+  /seller-requests/all:
+    get:
+      summary: "Fetch all seller requests by admin"
+      description: "Admins and owners can retrieve all seller requests."
+      tags:
+        - Seller Requests
+      security:
+        - accessToken: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: "Page number for pagination (default: 1)"
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          description: "Number of requests per page (default: 10)"
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "List of seller requests retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requests:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          description: "Request ID"
+                        seller:
+                          type: object
+                          properties:
+                            storeName:
+                              type: string
+                              description: "Store name of the seller"
+                            isActive:
+                              type: boolean
+                              description: "Seller's account status"
+                        product:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              description: "Product name"
+                            description:
+                              type: string
+                              description: "Product description"
+                            images:
+                              type: array
+                              items:
+                                type: string
+                                format: uri
+                              description: "List of product images"
+                  pagination:
+                    type: object
+                    properties:
+                      currentPage:
+                        type: integer
+                        description: "Current page number"
+                      totalPages:
+                        type: integer
+                        description: "Total number of pages"
+        404:
+          description: "No requests found"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"
+  /seller-requests:
+    get:
+      summary: "Fetch seller's requests"
+      description: "Sellers can retrieve their own submitted requests."
+      tags:
+        - Seller Requests
+      security:
+        - accessToken: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: "Page number for pagination (default: 1)"
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          description: "Number of requests per page (default: 10)"
+          schema:
+            type: integer
+        - name: requestStatus
+          in: query
+          required: false
+          description: "Filter requests by status (default: Pending)"
+          schema:
+            type: string
+            enum: ["Pending", "Approved", "Rejected"]
+      responses:
+        200:
+          description: "List of seller's requests retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sellerRequests:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          description: "Request ID"
+                        product:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              description: "Product name"
+                            description:
+                              type: string
+                              description: "Product description"
+                            images:
+                              type: array
+                              items:
+                                type: string
+                                format: uri
+                              description: "List of product images"
+                        requestStatus:
+                          type: string
+                          enum: ["Pending", "Approved", "Rejected"]
+                          description: "Current status of the request"
+                  pagination:
+                    type: object
+                    properties:
+                      currentPage:
+                        type: integer
+                      totalPages:
+                        type: integer
+        404:
+          description: "No requests found"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"
+
+    post:
+      summary: "Create a new seller request"
+      description: "Allows sellers to submit a request to sell a product."
+      tags:
+        - Seller Requests
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                product:
+                  type: string
+                  description: "Product ID"
+                price:
+                  type: number
+                  description: "Selling price for the product"
+                stock:
+                  type: integer
+                  description: "Stock available"
+      responses:
+        201:
+          description: "Request submitted successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Your Request Sent Successfully."
+                  request:
+                    type: object
+                    properties:
+                      _id:
+                        type: string
+                        description: "Request ID"
+                      product:
+                        type: string
+                        description: "Product ID"
+                      price:
+                        type: number
+                      stock:
+                        type: integer
+                      requestStatus:
+                        type: string
+                        enum: ["Pending", "Approved", "Rejected"]
+                        description: "Current status of the request"
+        409:
+          description: "Duplicate request or invalid product ID"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"
+  /seller-requests/{id}:
+    get:
+      summary: "Fetch a single seller request"
+      description: "Allows sellers to fetch the details of a specific request they made."
+      tags:
+        - Seller Requests
+      security:
+        - accessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the seller request"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Request details retrieved successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    description: "Request ID"
+                  product:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: "Product name"
+                      description:
+                        type: string
+                        description: "Product description"
+                      images:
+                        type: array
+                        items:
+                          type: string
+                          format: uri
+                        description: "List of product images"
+                  requestStatus:
+                    type: string
+                    enum: ["Pending", "Accepted", "Rejected"]
+                    description: "Current status of the request"
+                  adminMessage:
+                    type: string
+                    description: "Admin's message regarding the request"
+        403:
+          description: "Access forbidden - seller does not own the request"
+        404:
+          description: "Request not found"
+        409:
+          description: "Invalid request ID"
+
+    patch:
+      summary: "Update the status of a seller request"
+      description: "Admin or Owner can update the status of a seller's request."
+      tags:
+        - Seller Requests
+      security:
+        - accessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the seller request to update"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requestStatus:
+                  type: string
+                  enum: ["Accepted", "Rejected"]
+                  description: "The status of the request"
+                adminMessage:
+                  type: string
+                  description: "Message from the admin regarding the request"
+      responses:
+        200:
+          description: "Request status updated successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requestStatus:
+                    type: string
+                    enum: ["Accepted", "Rejected"]
+                  adminMessage:
+                    type: string
+        404:
+          description: "Request not found"
+        409:
+          description: "Conflict - invalid operation (e.g., request already accepted)"
+        400:
+          description: "Bad request - missing required fields"
+
+    delete:
+      summary: "Delete a seller request"
+      description: "Allows a seller to delete their request if it is still pending."
+      tags:
+        - Seller Requests
+      security:
+        - accessToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: "The ID of the seller request to delete"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Request deleted successfully"
+        403:
+          description: "Forbidden - seller cannot delete reviewed requests"
+        404:
+          description: "Request not found"
+        409:
+          description: "Conflict - invalid request ID"

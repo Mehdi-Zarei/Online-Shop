@@ -1,0 +1,184 @@
+paths:
+  /seller/register:
+    post:
+      summary: "Register a seller's store"
+      description: "This endpoint allows a seller to register their store information for review."
+      tags:
+        - Seller Registration
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                storeName:
+                  type: string
+                  description: "The name of the seller's store"
+                contactDetails:
+                  type: string
+                  description: "Contact details of the store"
+                location:
+                  type: string
+                  description: "Location of the store"
+                provincesID:
+                  type: string
+                  description: "Province ID where the store is located"
+                cityID:
+                  type: string
+                  description: "City ID where the store is located"
+                physicalAddress:
+                  type: string
+                  description: "Physical address of the store"
+      responses:
+        201:
+          description: "Store registration successfully submitted for review"
+        409:
+          description: "Store registration already exists or is being reviewed"
+        404:
+          description: "Province or city not found or invalid"
+  /seller/activate/{storeID}:
+    post:
+      summary: "Activate a seller's store"
+      description: "This endpoint allows an admin to activate a seller's store after reviewing it."
+      tags:
+        - Seller Registration
+      security:
+        - accessToken: []
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: "The ID of the store to be activated"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Store activated successfully"
+        404:
+          description: "Store or seller not found or seller is banned"
+        409:
+          description: "Store is already active or invalid store ID"
+        403:
+          description: "Forbidden - Only admin can activate stores"
+  /seller/deactivate/{storeID}:
+    post:
+      summary: "Deactivate a seller's store"
+      description: "This endpoint allows an admin to deactivate a seller's store."
+      tags:
+        - Seller Registration
+      security:
+        - accessToken: []
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: "The ID of the store to be deactivated"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Store deactivated successfully"
+        404:
+          description: "Store not found"
+        409:
+          description: "Store is already deactivated"
+        403:
+          description: "Forbidden - Only admin can deactivate stores"
+  /seller/updateInfo/{storeID}:
+    patch:
+      summary: "Update seller's store information"
+      description: "This endpoint allows a seller to update their store information."
+      tags:
+        - Seller Registration
+      security:
+        - accessToken: []
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: "The ID of the store to update"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                storeName:
+                  type: string
+                  description: "Updated name of the seller's store"
+                contactDetails:
+                  type: string
+                  description: "Updated contact details of the store"
+                location:
+                  type: string
+                  description: "Updated location of the store"
+                provincesID:
+                  type: string
+                  description: "Updated province ID where the store is located"
+                cityID:
+                  type: string
+                  description: "Updated city ID where the store is located"
+                physicalAddress:
+                  type: string
+                  description: "Updated physical address of the store"
+      responses:
+        200:
+          description: "Store information updated successfully"
+        403:
+          description: "Forbidden - Seller can only update their own store"
+        404:
+          description: "Store not found"
+        409:
+          description: "Invalid store ID"
+  /seller/{storeID}:
+    get:
+      summary: "Get seller store info"
+      description: "Admin, Owner, or the store's seller can access this route to get store details."
+      tags:
+        - Seller Registration
+      security:
+        - accessToken: []
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: "The ID of the store"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Store details retrieved successfully"
+        403:
+          description: "Forbidden - Only Admin, Owner, or Seller can access this"
+        404:
+          description: "Store not found"
+        409:
+          description: "Invalid store ID"
+
+    delete:
+      summary: "Remove a seller's store (Only Admin & Owner)"
+      description: "Only Admin and Owner can remove a seller's store from the system."
+      tags:
+        - Seller Registration
+      security:
+        - accessToken: []
+      parameters:
+        - name: storeID
+          in: path
+          required: true
+          description: "The ID of the store to be removed"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Store removed successfully"
+        404:
+          description: "Store not found"
+        409:
+          description: "Invalid store ID"

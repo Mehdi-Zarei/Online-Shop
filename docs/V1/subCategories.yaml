@@ -1,0 +1,228 @@
+paths:
+  /categories/sub:
+    post:
+      summary: "Create a Sub Category (Only Admin)"
+      description: "Allows Admins to create a new subcategory under a main category."
+      tags:
+        - SubCategory Management
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "Name of the subcategory."
+                slug:
+                  type: string
+                  description: "URL-friendly identifier for the subcategory."
+                parent:
+                  type: string
+                  description: "ID of the parent category."
+                description:
+                  type: string
+                  description: "Description of the subcategory."
+                filters:
+                  type: object
+                  description: "Filter options for the subcategory."
+      responses:
+        201:
+          description: "SubCategory created successfully."
+        404:
+          description: "Parent category not found."
+        409:
+          description: "Duplicate subcategory or invalid parent ID."
+
+    get:
+      summary: "Get All Sub Categories"
+      description: "Retrieves all subcategories along with their parent category details."
+      tags:
+        - SubCategory Management
+      responses:
+        200:
+          description: "List of subcategories retrieved successfully."
+        404:
+          description: "No subcategories found."
+  /categories/sub/{subCategoryID}:
+    put:
+      summary: "Update a Sub Category (Only Admin)"
+      description: "Allows Admins to update an existing subcategory."
+      tags:
+        - SubCategory Management
+      security:
+        - accessToken: []
+      parameters:
+        - name: subCategoryID
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "ID of the subcategory to be updated."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "Updated name of the subcategory."
+                slug:
+                  type: string
+                  description: "Updated URL-friendly identifier."
+                parent:
+                  type: string
+                  description: "ID of the new parent category."
+                description:
+                  type: string
+                  description: "Updated description of the subcategory."
+                filters:
+                  type: object
+                  description: "Updated filter options."
+      responses:
+        200:
+          description: "Sub Category updated successfully."
+        404:
+          description: "Sub Category or Parent Category not found."
+        409:
+          description: "Invalid Sub Category or Parent ID."
+
+    delete:
+      summary: "Delete a Sub Category (Only Admin)"
+      description: "Allows Admins to remove a subcategory along with its child subcategories."
+      tags:
+        - SubCategory Management
+      security:
+        - accessToken: []
+      parameters:
+        - name: subCategoryID
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "ID of the subcategory to be deleted."
+      responses:
+        200:
+          description: "Sub Category deleted successfully."
+        404:
+          description: "Sub Category not found."
+        409:
+          description: "Invalid Sub Category ID."
+  /categories/sub/child:
+    post:
+      summary: "Create a Child Sub Category (Only Admin)"
+      description: "Allows Admins to create a new child subcategory under an existing subcategory."
+      tags:
+        - ChildSubCategory Management
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "Name of the new child subcategory."
+                slug:
+                  type: string
+                  description: "URL-friendly identifier for the child subcategory."
+                parent:
+                  type: string
+                  description: "ID of the parent subcategory."
+                description:
+                  type: string
+                  description: "Description of the child subcategory."
+                filters:
+                  type: object
+                  description: "Filter options for the child subcategory."
+      responses:
+        201:
+          description: "Child Sub Category created successfully."
+        409:
+          description: "Child Sub Category already exists or invalid Parent ID."
+        404:
+          description: "Parent Sub Category not found."
+
+    get:
+      summary: "Get all Child Sub Categories"
+      description: "Retrieves all existing child subcategories."
+      tags:
+        - ChildSubCategory Management
+      security:
+        - accessToken: []
+      responses:
+        200:
+          description: "Child Sub Categories retrieved successfully."
+        404:
+          description: "No child subcategories found."
+  /categories/sub/child/{childSubCategoryID}:
+    put:
+      summary: "Update a Child Sub Category (Only Admin)"
+      description: "Allows Admins to update the details of an existing child subcategory."
+      tags:
+        - ChildSubCategory Management
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: childSubCategoryID
+          required: true
+          description: "ID of the child subcategory to be updated."
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "Updated name of the child subcategory."
+                slug:
+                  type: string
+                  description: "Updated URL-friendly identifier for the child subcategory."
+                parent:
+                  type: string
+                  description: "ID of the parent subcategory."
+                description:
+                  type: string
+                  description: "Updated description of the child subcategory."
+                filters:
+                  type: object
+                  description: "Updated filter options for the child subcategory."
+      responses:
+        200:
+          description: "Child Sub Category updated successfully."
+        404:
+          description: "Child Sub Category not found."
+        409:
+          description: "Invalid ID or failed to update."
+    delete:
+      summary: "Remove a Child Sub Category (Only Admin)"
+      description: "Allows Admins to remove an existing child subcategory."
+      tags:
+        - ChildSubCategory Management
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: childSubCategoryID
+          required: true
+          description: "ID of the child subcategory to be removed."
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Child Sub Category removed successfully."
+        404:
+          description: "Child Sub Category not found."

@@ -1,0 +1,416 @@
+paths:
+  /users/restrictUser/{userID}:
+    put:
+      summary: "Restrict a user"
+      description: "Restrict a user from accessing the platform. Only admins and owners are allowed to perform this action."
+      tags:
+        - User Management
+      parameters:
+        - in: path
+          name: userID
+          required: true
+          description: "The unique identifier of the user to restrict."
+          schema:
+            type: string
+      responses:
+        200:
+          description: "User restricted successfully."
+        403:
+          description: "Access forbidden. User does not have sufficient privileges."
+        404:
+          description: "User not found."
+        409:
+          description: "User is already restricted or the user is an owner."
+      security:
+        - accessToken: []
+
+  /users/unRestrictUser/{userID}:
+    put:
+      summary: "Unrestrict a user"
+      description: "Unrestrict a user who was previously restricted. Only admins and owners are allowed to perform this action."
+      tags:
+        - User Management
+      parameters:
+        - in: path
+          name: userID
+          required: true
+          description: "The unique identifier of the user to unrestrict."
+          schema:
+            type: string
+      responses:
+        200:
+          description: "User unrestricted successfully."
+        403:
+          description: "Access forbidden. User does not have sufficient privileges."
+        404:
+          description: "User not found."
+        409:
+          description: "User is not restricted."
+      security:
+        - accessToken: []
+
+  /users/me/addresses:
+    get:
+      tags:
+        - User Management
+      summary: Get all user addresses
+      description: Retrieves all addresses registered by the authenticated user.
+      operationId: getAllAddresses
+      security:
+        - accessToken: []
+      responses:
+        "200":
+          description: Successfully retrieved user addresses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    addressName:
+                      type: string
+                      description: Name of the address
+                    postalCode:
+                      type: string
+                      description: Postal code of the address
+                    location:
+                      type: string
+                      description: Location details of the address
+                    provincesID:
+                      type: integer
+                      description: ID of the province
+                    cityID:
+                      type: integer
+                      description: ID of the city
+                    physicalAddress:
+                      type: string
+                      description: Full physical address
+                    provincesName:
+                      type: string
+                      description: Name of the province
+                    cityName:
+                      type: string
+                      description: Name of the city
+        "404":
+          description: No addresses found for the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "You have not registered any address yet!!!!"
+
+    post:
+      summary: "Add a new address for the user"
+      description: "This endpoint allows the authenticated user to add a new address to their profile. It checks if the city and province match and if an address with the same city and province already exists."
+      tags:
+        - User Management
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                addressName:
+                  type: string
+                  description: "Name of the address."
+                postalCode:
+                  type: string
+                  description: "Postal code of the address."
+                location:
+                  type: string
+                  description: "Location description."
+                provincesID:
+                  type: string
+                  description: "Province ID for the address."
+                cityID:
+                  type: string
+                  description: "City ID for the address."
+                physicalAddress:
+                  type: string
+                  description: "Physical address details."
+              required:
+                - addressName
+                - postalCode
+                - location
+                - provincesID
+                - cityID
+                - physicalAddress
+      responses:
+        201:
+          description: "New address added successfully."
+        400:
+          description: "Address with the same city and province already exists."
+        404:
+          description: "Province or City not found."
+        409:
+          description: "City and province do not belong together."
+      security:
+        - accessToken: []
+    delete:
+      tags:
+        - User Management
+      summary: Delete all user addresses
+      description: Deletes all addresses associated with the authenticated user.
+      operationId: removeAllAddresses
+      security:
+        - accessToken: []
+      responses:
+        "200":
+          description: Successfully deleted all user addresses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "All your addresses have been successfully deleted."
+        "404":
+          description: No addresses found to delete
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "You have not registered any address yet!!!!"
+
+  /users/me/address/{addressID}/remove:
+    delete:
+      summary: "Remove an address from the user's profile"
+      description: "This endpoint allows the authenticated user to remove an address from their profile by providing the address ID."
+      tags:
+        - User Management
+      parameters:
+        - name: addressID
+          in: path
+          required: true
+          description: "The ID of the address to be removed."
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Address removed successfully."
+        404:
+          description: "Address not found."
+        409:
+          description: "Invalid address ID."
+      security:
+        - accessToken: []
+
+  /users/me/address/{addressID}:
+    get:
+      summary: "Get a specific address"
+      description: "Retrieve a specific address from the authenticated user's profile using the provided address ID."
+      tags:
+        - User Management
+      parameters:
+        - in: path
+          name: addressID
+          required: true
+          description: "The unique identifier of the address."
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Address retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  addressName:
+                    type: string
+                    description: "Name of the address."
+                  postalCode:
+                    type: string
+                    description: "Postal code of the address."
+                  location:
+                    type: string
+                    description: "Location description."
+                  provincesID:
+                    type: string
+                    description: "Province ID of the address."
+                  cityID:
+                    type: string
+                    description: "City ID of the address."
+                  physicalAddress:
+                    type: string
+                    description: "Physical address details."
+        404:
+          description: "Address not found."
+        409:
+          description: "Invalid address ID format."
+      security:
+        - accessToken: []
+    patch:
+      summary: "Update a specific address"
+      description: "Update an existing address for the authenticated user. You can update the address name, postal code, location, and physical address."
+      tags:
+        - User Management
+      parameters:
+        - in: path
+          name: addressID
+          required: true
+          description: "The unique identifier of the address to be updated."
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                addressName:
+                  type: string
+                  description: "Name of the address."
+                postalCode:
+                  type: string
+                  description: "Postal code of the address."
+                location:
+                  type: string
+                  description: "Location description."
+                provincesID:
+                  type: string
+                  description: "Province ID for the address."
+                cityID:
+                  type: string
+                  description: "City ID for the address."
+                physicalAddress:
+                  type: string
+                  description: "Physical address details."
+      responses:
+        200:
+          description: "Address updated successfully."
+        404:
+          description: "Address not found."
+        409:
+          description: "The selected city and province do not belong to each other."
+        400:
+          description: "Invalid input or missing required fields."
+      security:
+        - accessToken: []
+
+  /users:
+    get:
+      summary: "Get a list of users"
+      description: "Retrieve a paginated list of users. This route is restricted to users with 'ADMIN' or 'OWNER' roles."
+      tags:
+        - User Management
+      parameters:
+        - in: query
+          name: page
+          required: false
+          description: "The page number for pagination (default is 1)."
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          required: false
+          description: "The number of users per page (default is 10)."
+          schema:
+            type: integer
+            default: 10
+      responses:
+        200:
+          description: "Successfully retrieved users list."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        _id:
+                          type: string
+                          description: "The unique identifier of the user."
+                        username:
+                          type: string
+                          description: "Username of the user."
+                        email:
+                          type: string
+                          description: "Email address of the user."
+                        roles:
+                          type: array
+                          items:
+                            type: string
+                          description: "Roles assigned to the user."
+                  pagination:
+                    type: object
+                    properties:
+                      currentPage:
+                        type: integer
+                        description: "Current page number."
+                      totalPages:
+                        type: integer
+                        description: "Total number of pages."
+                      totalUsers:
+                        type: integer
+                        description: "Total number of users."
+        403:
+          description: "Forbidden. User does not have the required permissions to access this route."
+        500:
+          description: "Internal server error."
+      security:
+        - accessToken: []
+
+  /users/{userID}/change-roles:
+    patch:
+      summary: "Change a user's role"
+      description: "Changes the role of a user. Only users with the 'OWNER' role are allowed to perform this action. The roles can be 'OWNER', 'ADMIN', 'AUTHOR', or 'SELLER'."
+      tags:
+        - User Management
+      parameters:
+        - in: path
+          name: userID
+          required: true
+          description: "The unique identifier of the user whose role is to be changed."
+          schema:
+            type: string
+        - in: body
+          name: role
+          required: true
+          description: "The role to assign to the user."
+          schema:
+            type: object
+            properties:
+              role:
+                type: string
+                enum:
+                  - OWNER
+                  - ADMIN
+                  - AUTHOR
+                  - SELLER
+                description: "The new role to assign to the user."
+      responses:
+        200:
+          description: "User's role changed successfully."
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User role changed to ADMIN successfully."
+        403:
+          description: "Forbidden. Only users with the 'OWNER' role can change roles."
+        404:
+          description: "User not found."
+        409:
+          description: "Conflict. The role is invalid or the user already has the role."
+        500:
+          description: "Internal server error."
+      security:
+        - accessToken: []

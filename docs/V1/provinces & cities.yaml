@@ -1,0 +1,65 @@
+paths:
+  /location/provinces:
+    get:
+      summary: "Get all provinces"
+      description: "Retrieves all available provinces. Each province is represented by an ID and name."
+      tags:
+        - Location Management
+      responses:
+        200:
+          description: "List of provinces retrieved successfully."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: "The unique identifier of the province."
+                    name:
+                      type: string
+                      description: "The name of the province."
+        500:
+          description: "Internal server error."
+      security:
+        - accessToken: []
+  /location/cities/{provinceID}:
+    get:
+      summary: "Get cities by province"
+      description: "Retrieves cities associated with a specific province based on the given province ID."
+      tags:
+        - Location Management
+      parameters:
+        - in: path
+          name: provinceID
+          required: true
+          description: "The unique identifier of the province."
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "List of cities retrieved successfully for the specified province."
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                      description: "The unique identifier of the city."
+                    name:
+                      type: string
+                      description: "The name of the city."
+                    province_id:
+                      type: integer
+                      description: "The unique identifier of the province to which the city belongs."
+        404:
+          description: "No cities found for this province."
+        500:
+          description: "Internal server error."
+      security:
+        - accessToken: []

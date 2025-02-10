@@ -1,0 +1,120 @@
+paths:
+  /categories/:
+    post:
+      summary: "Create a Main Category (Only Admin)"
+      description: "Allows Admins to create a new main category."
+      tags:
+        - Category Management
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - title
+                - slug
+              properties:
+                title:
+                  type: string
+                  description: "Name of the category."
+                slug:
+                  type: string
+                  description: "URL-friendly identifier for the category."
+                description:
+                  type: string
+                  description: "Optional category description."
+                filters:
+                  type: string
+                  description: "JSON string of filters applicable to this category."
+                icon:
+                  type: string
+                  format: binary
+                  description: "Category icon image file."
+      responses:
+        201:
+          description: "Category created successfully."
+        409:
+          description: "Category already exists."
+        400:
+          description: "Invalid request data."
+
+    get:
+      summary: "Get All Main Categories"
+      description: "Retrieve a list of all main categories, including their subcategories and child categories."
+      tags:
+        - Category Management
+      responses:
+        200:
+          description: "List of categories retrieved successfully."
+        404:
+          description: "No categories found."
+  /categories/{categoryID}:
+    put:
+      summary: "Update a Main Category (Only Admin)"
+      description: "Allows Admins to update an existing main category."
+      tags:
+        - Category Management
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: categoryID
+          required: true
+          schema:
+            type: string
+          description: "ID of the category to update."
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: "Updated category name."
+                slug:
+                  type: string
+                  description: "Updated URL-friendly identifier for the category."
+                description:
+                  type: string
+                  description: "Updated category description."
+                filters:
+                  type: string
+                  description: "JSON string of updated filters for this category."
+                icon:
+                  type: string
+                  format: binary
+                  description: "Updated category icon image file."
+      responses:
+        200:
+          description: "Category updated successfully."
+        404:
+          description: "Category not found."
+        409:
+          description: "Invalid category ID."
+
+    delete:
+      summary: "Remove a Main Category (Only Admin)"
+      description: "Deletes a main category along with its subcategories and child categories."
+      tags:
+        - Category Management
+      security:
+        - accessToken: []
+      parameters:
+        - in: path
+          name: categoryID
+          required: true
+          schema:
+            type: string
+          description: "ID of the category to delete."
+      responses:
+        200:
+          description: "Category and its subcategories deleted successfully."
+        404:
+          description: "Category not found."
+        409:
+          description: "Invalid category ID."

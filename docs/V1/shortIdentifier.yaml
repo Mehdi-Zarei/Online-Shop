@@ -1,0 +1,26 @@
+paths:
+  /p/{shortIdentifier}:
+    get:
+      tags:
+        - short identifier
+      summary: "Redirect to the product page"
+      description: "Redirects the user to the full product details page using a short identifier."
+      parameters:
+        - name: shortIdentifier
+          in: path
+          required: true
+          description: "The short identifier of the product"
+          schema:
+            type: string
+      responses:
+        302:
+          description: "Redirects to the product page"
+          headers:
+            Location:
+              description: "The URL of the product page"
+              schema:
+                type: string
+        404:
+          description: "Product not found"
+        500:
+          description: "Internal server error"

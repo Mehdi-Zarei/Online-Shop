@@ -1,0 +1,227 @@
+paths:
+  /products:
+    post:
+      summary: "Create a new product (Only Admin)"
+      description: "Allows admins to create a new product by providing product details, images, filters, and seller information."
+      tags:
+        - Product Management
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: "Name of the product."
+                description:
+                  type: string
+                  description: "Description of the product."
+                childSubCategory:
+                  type: string
+                  description: "ID of the child subcategory the product belongs to."
+                filterValues:
+                  type: object
+                  description: "Filter values for product attributes."
+                customFilters:
+                  type: object
+                  description: "Custom filter options for the product."
+                slug:
+                  type: string
+                  description: "URL-friendly identifier for the product."
+                sellers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      sellerID:
+                        type: string
+                        description: "ID of the seller."
+      responses:
+        201:
+          description: "Product created successfully."
+        400:
+          description: "Invalid product data."
+        404:
+          description: "Seller or category not found."
+        409:
+          description: "Product already exists or image not provided."
+    get:
+      summary: "Get all products"
+      description: "Retrieve a list of all products with pagination, including subcategory and seller details."
+      tags:
+        - Product Management
+      parameters:
+        - in: query
+          name: page
+          description: "Page number for pagination."
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          description: "Number of products per page."
+          schema:
+            type: integer
+            default: 10
+      responses:
+        200:
+          description: "List of products retrieved successfully."
+        404:
+          description: "No products found."
+  /products/filters:
+    get:
+      summary: "Get products with filters"
+      description: "Retrieve a list of products based on various filters such as name, price range, category, and custom filters."
+      tags:
+        - Product Management
+      parameters:
+        - in: query
+          name: page
+          description: "Page number for pagination."
+          schema:
+            type: integer
+            default: 1
+        - in: query
+          name: limit
+          description: "Number of products per page."
+          schema:
+            type: integer
+            default: 10
+        - in: query
+          name: name
+          description: "Product name or part of the name (supports Persian and English letters)."
+          schema:
+            type: string
+        - in: query
+          name: childSubCategory
+          description: "ID of the child subcategory the product belongs to."
+          schema:
+            type: string
+        - in: query
+          name: sellers
+          description: "ID of the seller."
+          schema:
+            type: string
+        - in: query
+          name: filterValues
+          description: "Custom filter values in JSON format."
+          schema:
+            type: string
+        - in: query
+          name: customFilters
+          description: "Custom filters in JSON format."
+          schema:
+            type: string
+        - in: query
+          name: minPrice
+          description: "Minimum price for the product."
+          schema:
+            type: number
+        - in: query
+          name: maxPrice
+          description: "Maximum price for the product."
+          schema:
+            type: number
+      responses:
+        200:
+          description: "Filtered products retrieved successfully."
+        400:
+          description: "Invalid filter format or missing required fields."
+        404:
+          description: "No products found with the provided filters."
+  /products/products/{id}:
+    get:
+      summary: "Get a product by ID"
+      description: "Retrieve the full information of a product, including its child subcategory, sellers, and related details."
+      tags:
+        - Product Management
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: "The unique identifier of the product."
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Product information retrieved successfully."
+        404:
+          description: "Product not found."
+        409:
+          description: "Invalid product ID."
+
+    put:
+      summary: "Update product information"
+      description: "Update the details of an existing product, such as name, description, filters, slug, and images."
+      tags:
+        - Product Management
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: "The unique identifier of the product."
+          schema:
+            type: string
+      requestBody:
+        description: "Product details to update."
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                childSubCategory:
+                  type: string
+                filterValues:
+                  type: string
+                customFilters:
+                  type: string
+                slug:
+                  type: string
+                deleteOldImages:
+                  type: string
+                  enum: ["true", "false"]
+                images:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        200:
+          description: "Product updated successfully."
+        400:
+          description: "Invalid or missing fields in the request."
+        404:
+          description: "Product not found."
+        409:
+          description: "Invalid product ID or slug."
+      security:
+        - bearerAuth: []
+
+    delete:
+      summary: "Delete a product by ID"
+      description: "Delete a product and its associated images from the system."
+      tags:
+        - Product Management
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: "The unique identifier of the product to be deleted."
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Product removed successfully."
+        404:
+          description: "Product not found."
+        409:
+          description: "Invalid product ID."
+      security:
+        - bearerAuth: []

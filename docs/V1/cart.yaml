@@ -1,0 +1,92 @@
+paths:
+  /cart:
+    get:
+      summary: "Get User Cart"
+      description: "Retrieve the current user's shopping cart details."
+      tags:
+        - Cart
+      security:
+        - accessToken: []
+      responses:
+        200:
+          description: "Cart retrieved successfully"
+        404:
+          description: "Cart is empty"
+  /cart/add:
+    post:
+      summary: "Add Product to Cart"
+      description: "Allows users to add a product from a specific seller to their cart."
+      tags:
+        - Cart
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productID
+                - sellerID
+                - quantity
+              properties:
+                productID:
+                  type: string
+                  format: ObjectId
+                  description: "ID of the product to be added to the cart."
+                sellerID:
+                  type: string
+                  format: ObjectId
+                  description: "ID of the seller offering the product."
+                quantity:
+                  type: integer
+                  minimum: 1
+                  description: "Number of units of the product to add."
+      responses:
+        201:
+          description: "Product successfully added to the cart."
+        400:
+          description: "Invalid request, seller does not sell this product."
+        404:
+          description: "Product not found or insufficient stock."
+        409:
+          description: "Invalid Product or Seller ID."
+  /cart/remove:
+    delete:
+      summary: "Remove Product from Cart"
+      description: "Allows users to remove a specified quantity of a product from their cart."
+      tags:
+        - Cart
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productID
+                - sellerID
+                - quantity
+              properties:
+                productID:
+                  type: string
+                  format: ObjectId
+                  description: "ID of the product to be removed from the cart."
+                sellerID:
+                  type: string
+                  format: ObjectId
+                  description: "ID of the seller offering the product."
+                quantity:
+                  type: integer
+                  minimum: 1
+                  description: "Number of units of the product to remove."
+      responses:
+        200:
+          description: "Product quantity successfully reduced or removed from the cart."
+        404:
+          description: "Cart, product, or seller not found."
+        409:
+          description: "Invalid Product or Seller ID."

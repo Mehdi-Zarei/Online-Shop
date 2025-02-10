@@ -1,0 +1,284 @@
+tags:
+  - name: Comments
+    description: "Endpoints related to product comments"
+
+paths:
+  /comments:
+    get:
+      summary: "Get all comments for a product"
+      description: "Fetches all approved comments for a specific product with pagination."
+      tags:
+        - Comments
+      parameters:
+        - name: productID
+          in: query
+          required: true
+          description: "The ID of the product for which comments are being fetched"
+          schema:
+            type: string
+        - name: page
+          in: query
+          required: false
+          description: "Page number for pagination (default: 1)"
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          description: "Number of comments per page (default: 10)"
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "A list of approved comments with pagination"
+        404:
+          description: "Product not found"
+        409:
+          description: "Invalid Product ID"
+        500:
+          description: "Internal server error"
+
+    post:
+      summary: "Create a new comment"
+      description: "Allows an authenticated user to add a new comment for a product"
+      tags:
+        - Comments
+      security:
+        - accessToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - productID
+                - content
+                - score
+              properties:
+                productID:
+                  type: string
+                  description: "The ID of the product being commented on"
+                content:
+                  type: string
+                  description: "The content of the comment"
+                score:
+                  type: integer
+                  description: "The rating given by the user (e.g., 1-5)"
+      responses:
+        201:
+          description: "New comment created successfully"
+        404:
+          description: "Product not found"
+        409:
+          description: "Duplicate comment content or invalid product ID"
+        500:
+          description: "Internal server error"
+  /comments/all:
+    get:
+      summary: "Get all comments (Admin only)"
+      description: "Fetches all comments including unapproved ones. Only accessible by ADMIN and OWNER roles."
+      tags:
+        - Comments
+      security:
+        - accessToken: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          description: "Page number for pagination (default: 1)"
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          required: false
+          description: "Number of comments per page (default: 10)"
+          schema:
+            type: integer
+      responses:
+        200:
+          description: "A list of all comments with pagination"
+        404:
+          description: "No comments found"
+        403:
+          description: "Forbidden - Only ADMIN or OWNER can access"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"
+  /comments/{commentID}:
+    patch:
+      summary: "Approve or reject a comment (Admin only)"
+      description: "Allows ADMIN or OWNER to approve or reject a comment."
+      tags:
+        - Comments
+      security:
+        - accessToken: []
+      parameters:
+        - name: commentID
+          in: path
+          required: true
+          description: "ID of the comment to update"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isAccept:
+                  type: boolean
+                  description: "Set true to approve the comment, false to reject"
+      responses:
+        200:
+          description: "Comment status updated successfully"
+        404:
+          description: "Comment not found"
+        409:
+          description: "Invalid comment ID"
+        403:
+          description: "Forbidden - Only ADMIN or OWNER can access"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"
+
+    delete:
+      summary: "Delete a comment (Admin only)"
+      description: "Allows ADMIN or OWNER to delete a comment."
+      tags:
+        - Comments
+      security:
+        - accessToken: []
+      parameters:
+        - name: commentID
+          in: path
+          required: true
+          description: "ID of the comment to delete"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Comment deleted successfully"
+        404:
+          description: "Comment not found"
+        409:
+          description: "Invalid comment ID"
+        403:
+          description: "Forbidden - Only ADMIN or OWNER can access"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"
+  /comments/{commentID}/reply:
+    post:
+      summary: "Reply to a comment"
+      description: "Allows authenticated users to reply to a comment."
+      tags:
+        - Comments
+      security:
+        - accessToken: []
+      parameters:
+        - name: commentID
+          in: path
+          required: true
+          description: "ID of the comment to reply to"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+                  description: "Reply content"
+      responses:
+        201:
+          description: "Reply added successfully"
+        404:
+          description: "Comment not found"
+        409:
+          description: "Invalid comment ID or duplicate reply"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"
+  /comments/{commentID}/reply/{replyID}:
+    delete:
+      summary: "Remove a reply"
+      description: "Allows admins or owners to delete a specific reply to a comment."
+      tags:
+        - Comments
+      security:
+        - accessToken: []
+      parameters:
+        - name: commentID
+          in: path
+          required: true
+          description: "ID of the comment containing the reply"
+          schema:
+            type: string
+        - name: replyID
+          in: path
+          required: true
+          description: "ID of the reply to be deleted"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "Reply removed successfully"
+        404:
+          description: "Comment or reply not found"
+        409:
+          description: "Invalid comment or reply ID"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"
+
+    patch:
+      summary: "Set reply status"
+      description: "Allows admins or owners to approve or reject a reply to a comment."
+      tags:
+        - Comments
+      security:
+        - accessToken: []
+      parameters:
+        - name: commentID
+          in: path
+          required: true
+          description: "ID of the comment containing the reply"
+          schema:
+            type: string
+        - name: replyID
+          in: path
+          required: true
+          description: "ID of the reply whose status is being updated"
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                isAccept:
+                  type: boolean
+                  description: "Set to true for accepting the reply, false for rejecting"
+      responses:
+        200:
+          description: "Reply status updated successfully"
+        404:
+          description: "Comment or reply not found"
+        409:
+          description: "Invalid comment or reply ID"
+        401:
+          description: "Unauthorized - Missing or invalid token"
+        500:
+          description: "Internal server error"

@@ -395,9 +395,7 @@ paths:
       tags:
         - Authentication
       summary: "Refresh access token"
-      description: "This endpoint returns a new access token when a valid refresh token is provided."
-      security:
-        - refreshToken: [] # Use the refresh token for authentication
+      description: "This endpoint returns a new access token when a valid refresh token is provided.Refresh token must be stored in cookies by this format.---> refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
       responses:
         "200":
           description: "Successfully refreshed access token."

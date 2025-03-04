@@ -83,14 +83,13 @@ const getRefreshTokenFromRedis = async (key) => {
   return refreshToken;
 };
 
-const saveResetPasswordTokenInRedis = async (key, email) => {
+const saveResetPasswordTokenInRedis = async (token, email) => {
   try {
-    const token = await redis.hset(`resetPassword:${key}`, {
-      token: key,
-      email,
-    });
-    await redis.expire(`resetPassword:${key}`, 3600); //* 1 Hour
-    return token;
+    await redis
+      .multi()
+      .hset(`resetPassword:${token}`, { token, email })
+      .expire(`resetPassword:${token}`, 3600)
+      .exec();
   } catch (error) {
     throw error;
   }

@@ -117,7 +117,7 @@ npm start
 ### Or for development mode:
 
 ```bash
-npm run dev
+npm start
 ```
 
 📄 API Documentation
